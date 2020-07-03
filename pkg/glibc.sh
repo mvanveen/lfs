@@ -7,15 +7,13 @@ cd glibc-2.31
 mkdir -v build
 cd build
 
-mkdir tmp/
-
 ../configure                             \
-      TMP_DIR=tmp/                       \
       --prefix=/tools                    \
       --host=$LFS_TGT                    \
       --build=$(../scripts/config.guess) \
       --enable-kernel=3.2                \
-      --with-headers=/tools/include
+      --with-headers=/tools/include      \
+      libc_cv_ctors_header=yes
 
 make -j1
 
