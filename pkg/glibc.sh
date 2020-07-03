@@ -1,0 +1,3 @@
+cd /mnt/lfs/sources
+
+
