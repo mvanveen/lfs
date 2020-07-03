@@ -10,7 +10,8 @@ docker-kill:
 	./kill_container.sh
 
 undo-known-hosts:
-	sed -i '' -e '$$ d' ~/.ssh/known_hosts # mac os x specific
+	#sed -i '' -e '$$ d' ~/.ssh/known_hosts # mac os x specific
+	sed -i '$$ d' ~/.ssh/known_hosts # mac os x specific
 
 clean:
 	rm -rf lfs.img
