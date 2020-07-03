@@ -33,13 +33,10 @@ dl-sources:
 	cat packages.txt | xargs -n 1 ssh -p 2222 lfs@localhost wget --continue --directory-prefix=/mnt/lfs/sources
 
 pkgs:
-	#cat pkg/coreutils.sh | ssh -p 2222 lfs@localhost
-	#cat pkg/gcc-pass1.sh | ssh -p 2222 lfs@localhost
-	#cat pkg/linux-headers.sh | ssh -p 2222 lfs@localhost
 	scp -P 2222 pkg/coreutils.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source coreutils.sh"
 	scp -P 2222 pkg/gcc-pass1.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source gcc-pass1.sh"
 	scp -P 2222 pkg/linux-headers.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source linux-headers.sh"
-	
+	scp -P 2222 pkg/glibc.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source glibc.sh"
 
 
 all: docker-kill clean docker-build undo-known-hosts docker-run ext4-img run-stage0 stage1 dl-sources
