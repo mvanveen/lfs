@@ -11,7 +11,8 @@ docker-kill:
 
 undo-known-hosts:
 	#sed -i '' -e '$$ d' ~/.ssh/known_hosts # mac os x specific
-	sed -i '$$ d' ~/.ssh/known_hosts # linux specific
+	#sed -i '$$ d' ~/.ssh/known_hosts # linux specific
+	rm -rf ~/.ssh/known_hosts
 
 clean:
 	rm -rf lfs.img
@@ -39,7 +40,8 @@ pkgs:
 	scp -P 2222 pkg/gcc-pass1.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source gcc-pass1.sh"
 	scp -P 2222 pkg/linux-headers.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source linux-headers.sh"
 	scp -P 2222 pkg/glibc.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source glibc.sh"
-	
+	scp -P 2222 pkg/libstdcplusplus.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source libstdcplusplus.sh"
+	#scp -P 2222 pkg/binutils-pass-2.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source binutils-pass-2.sh"
 
 
 all: docker-kill clean docker-build undo-known-hosts docker-run run-stage0 ext4-img run-stage1 dl-sources
