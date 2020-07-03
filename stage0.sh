@@ -2,7 +2,7 @@ rm -f /bin/sh
 ln -s /bin/bash /bin/sh
 
 addgroup lfs
-adduser -s /bin/bash -G lfs -k /dev/null lfs -D
+useradd -s /bin/bash -g lfs -k /dev/null -m lfs
 #su - lfs
 
 su lfs -c "cat > ~/.bash_profile << "EOF"
