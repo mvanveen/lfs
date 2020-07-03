@@ -5,7 +5,11 @@ ENV LFS /
 RUN apk add build-base
 RUN apk add openrc
 RUN apk add openssh
+RUN apk add e2fsprogs
+RUN apk add util-linux
 RUN apk add bash # needed for LFS
+RUN apk add gawk
+RUN apk add bison
 RUN rc-update add sshd
 RUN rc-status
 RUN touch /run/openrc/softlevel

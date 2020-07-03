@@ -1,0 +1,27 @@
+rm -f /bin/sh
+ln -s /bin/bash /bin/sh
+
+addgroup lfs
+adduser -s /bin/bash -G lfs -k /dev/null lfs -D
+#su - lfs
+
+su lfs -c "cat > ~/.bash_profile << "EOF"
+exec env -i HOME=\$HOME TERM=\$TERM PS1='\u:\w\$ ' /bin/bash
+EOF"
+
+su lfs -c "cat > ~/.bashrc << "EOF"
+set +h
+umask 022
+LFS=/mnt/lfs
+LC_ALL=POSIX
+LFS_TGT=\$(uname -m)-lfs-linux-gnu
+PATH=/tools/bin:/bin:/usr/bin
+export LFS LC_ALL LFS_TGT PATH
+EOF"
+
+mkdir -p ~lfs/.ssh
+chmod 0700 ~/.ssh
+cp ~/.ssh/authorized_keys ~lfs/.ssh/authorized_keys
+sed -i -e 's/^lfs:!:/lfs::/' /etc/shadow
+su lfs -c "ssh-keygen -A"
+
