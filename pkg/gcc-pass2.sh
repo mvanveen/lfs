@@ -56,7 +56,7 @@ RANLIB=$LFS_TGT-ranlib                             \
     --disable-bootstrap                            \
     --disable-libgomp
 
-make
+make -j24
 
 make install
 

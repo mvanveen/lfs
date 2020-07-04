@@ -6,9 +6,10 @@ cd bash-5.0
 
 ./configure --prefix=/tools --without-bash-malloc
 
+sed -i 's/lcurses/lncursesw/g' Makefile
+
 make
 
-#make tests
 
 make install
 
