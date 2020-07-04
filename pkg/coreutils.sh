@@ -5,9 +5,6 @@ rm -rf coreutils-8.31
 tar xf coreutils-8.31.tar.xz 
 cd coreutils-8.31
 
-mkdir -v build
-cd build
-
 ./configure --prefix=/tools --enable-install-program=hostname
 
 make
