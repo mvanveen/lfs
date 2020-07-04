@@ -51,6 +51,21 @@ pkgs:
 	scp -P 2222 pkg/bison.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source bison.sh"
 	scp -P 2222 pkg/bzip2.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source bzip2.sh"
 	scp -P 2222 pkg/coreutils.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source coreutils.sh"
-
+	scp -P 2222 pkg/diffutils.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source diffutils.sh"
+	scp -P 2222 pkg/file.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source file.sh"
+	scp -P 2222 pkg/findutils.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source findutils.sh"
+	scp -P 2222 pkg/gawk.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source gawk.sh"
+	scp -P 2222 pkg/gettext.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source gettext.sh"
+	scp -P 2222 pkg/grep.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source grep.sh"
+	scp -P 2222 pkg/make.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source make.sh"
+	scp -P 2222 pkg/patch.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source patch.sh"
+	scp -P 2222 pkg/perl.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source perl.sh"
+	scp -P 2222 pkg/python.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source python.sh"
+	scp -P 2222 pkg/sed.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source sed.sh"
+	scp -P 2222 pkg/tar.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source tar.sh"
+	scp -P 2222 pkg/texinfo.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source texinfo.sh"
+	scp -P 2222 pkg/xz.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source xz.sh"
+	ssh -p 2222 root@localhost "chown -R root:root $LFS/tools"
+	scp -P 2222 prep.sh root@localhost: && ssh -p 2222 root@localhost "source prep.sh"
 
 all: docker-kill clean docker-build undo-known-hosts docker-run run-stage0 ext4-img run-stage1 dl-sources
