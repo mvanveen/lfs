@@ -44,6 +44,11 @@ pkgs:
 	scp -P 2222 pkg/binutils-pass-2.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source binutils-pass-2.sh"
 	scp -P 2222 pkg/gcc-pass2.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source gcc-pass2.sh"
 	scp -P 2222 pkg/tcl.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source tcl.sh"
+	scp -P 2222 pkg/expect.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source expect.sh"
+	scp -P 2222 pkg/dejagnu.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source dejagnu.sh"
+	scp -P 2222 pkg/m4.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source m4.sh"
+	#scp -P 2222 pkg/ncurses.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source ncurses.sh"
+	#scp -P 2222 pkg/bash.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source bash.sh"
 
 
 all: docker-kill clean docker-build undo-known-hosts docker-run run-stage0 ext4-img run-stage1 dl-sources
