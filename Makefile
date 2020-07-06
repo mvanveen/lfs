@@ -34,7 +34,7 @@ run-stage1:
 dl-sources:
 	cat packages.txt | xargs -n1 ssh -p 2222 lfs@localhost wget --continue --directory-prefix=/mnt/lfs/sources
 
-pkgs:
+prep-pkgs:
 	scp -P 2222 pkg/prep/binutils.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source binutils.sh"
 	scp -P 2222 pkg/prep/gcc-pass1.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source gcc-pass1.sh"
 	scp -P 2222 pkg/prep/linux-headers.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source linux-headers.sh"
@@ -65,7 +65,10 @@ pkgs:
 	scp -P 2222 pkg/prep/tar.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source tar.sh"
 	scp -P 2222 pkg/prep/texinfo.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source texinfo.sh"
 	scp -P 2222 pkg/prep/xz.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source xz.sh"
-	ssh -p 2222 root@localhost "chown -R root:root $LFS/tools"
-	scp -P 2222 prep.sh root@localhost: && ssh -p 2222 root@localhost "source prep.sh"
 
-all: docker-kill clean docker-build undo-known-hosts docker-run run-stage0 ext4-img run-stage1 dl-sources
+build-pkgs:
+	# TODO: restart ssh daemon for some raisin
+	scp -P 2222 pkg/build/* root@localhost:/mnt/lfs/tools && ssh -p 2222 root@localhost "sh /tools/run-build.sh"
+
+	
+all: docker-kill clean docker-build  docker-run run-stage0 ext4-img run-stage1 dl-sources prep-pkgs build-pkgs
