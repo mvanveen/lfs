@@ -3,7 +3,7 @@ FROM ubuntu:18.04
 ENV LFS /
 
 RUN apt-get update
-RUN apt-get install -y build-essential openssh-server python3 gawk bison texinfo
+RUN apt-get install -y build-essential openssh-server python3 gawk bison texinfo kpartx
 #RUN apk add openssh
 #RUN touch /run/openrc/softlevel
 RUN mkdir -p /root/.ssh

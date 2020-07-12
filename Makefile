@@ -20,16 +20,16 @@ clean:
 	docker rmi -f linuxfromscratch
 
 ext4-img:
-	scp -P 2222 scripts/mkext4.sh root@localhost: && ssh -p 2222 -o StrictHostKeyChecking=no -l "root" "localhost" "source mkext4.sh"
+	scp -P 2222 script/mkext4.sh root@localhost: && ssh -p 2222 -o StrictHostKeyChecking=no -l "root" "localhost" "source mkext4.sh"
 
 ssh:
 	./ssh.sh
 
 run-stage0:
-	cat scripts/stage0.sh | ssh -p 2222 -o StrictHostKeyChecking=no -l "root" "localhost"
+	cat script/stage0.sh | ssh -p 2222 -o StrictHostKeyChecking=no -l "root" "localhost"
 
 run-stage1:
-	cat scripts/stage1.sh | ssh -p 2222 -o StrictHostKeyChecking=no -l "root" "localhost"
+	cat script/stage1.sh | ssh -p 2222 -o StrictHostKeyChecking=no -l "root" "localhost"
 
 dl-sources:
 	cat packages.txt | xargs -n1 ssh -p 2222 lfs@localhost wget --continue --directory-prefix=/mnt/lfs/sources
