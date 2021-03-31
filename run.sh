@@ -1,1 +1,1 @@
-service ssh start && while true; do sleep 1; done;
+service ssh start && tail -f /dev/null
