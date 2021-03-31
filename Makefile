@@ -4,7 +4,7 @@ docker-build:
 docker-run:
 	#docker run -v sources:/sources -p 2222:22 -d linuxfromscratch
 	#-v ${CURDIR}/lfs.img:/root/lfs.img 
-	docker run -p 2222:22 -d --privileged linuxfromscratch
+	docker run -p 2222:22 --privileged linuxfromscratch
 
 docker-kill:
 	./kill_container.sh
@@ -71,4 +71,5 @@ build-pkgs:
 	scp -P 2222 pkg/build/* root@localhost:/mnt/lfs/tools && ssh -p 2222 root@localhost "sh /tools/run-build.sh"
 
 	
-all: docker-kill clean docker-build  docker-run run-stage0 ext4-img run-stage1 dl-sources prep-pkgs build-pkgs
+all: docker-kill clean docker-build docker-run run-stage0 ext4-img run-stage1 dl-sources prep-pkgs build-pkgs
+x-all: docker-kill clean docker-build docker-run

@@ -21,7 +21,6 @@ EOF"
 
 mkdir -p ~lfs/.ssh
 chmod 0700 ~/.ssh
-cp ~/.ssh/authorized_keys ~lfs/.ssh/authorized_keys
 sed -i -e 's/^lfs:!:/lfs::/' /etc/shadow
 su lfs -c "ssh-keygen -A"
 
