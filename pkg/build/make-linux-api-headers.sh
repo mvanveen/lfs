@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-cd /sources
-
 rm -rf linux-5.13.19
 tar -xzf linux-5.13.19.tar.gz
 cd linux-5.13.19;
