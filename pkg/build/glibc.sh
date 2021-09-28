@@ -1,10 +1,10 @@
 cd /sources;
 
-rm -rf glibc-2.31
-tar xf glibc-2.31.tar.xz
-cd glibc-2.31
+rm -rf glibc-2.34
+tar xf glibc-2.34.tar.xz
+cd glibc-2.34
 
-patch -Np1 -i ../glibc-2.31-fhs-1.patch
+patch -Np1 -i ../glibc-2.34-fhs-1.patch
 
 case $(uname -m) in
     i?86)   ln -sfv ld-linux.so.2 /lib/ld-lsb.so.3
@@ -17,12 +17,15 @@ esac
 mkdir -v build
 cd       build
 
+echo "rootsbindir=/usr/sbin" > configparms
+
 CC="gcc -ffile-prefix-map=/tools=/usr" \
 ../configure --prefix=/usr                          \
-             --disable-werror                       \
+             --host=$LFS_TGT                        \
+	     --build=$(../scripts/config.guess)     \
              --enable-kernel=3.2                    \
+             --with-headers=$LFS/usr/include        \
              --enable-stack-protector=strong        \
-             --with-headers=/usr/include            \
              libc_cv_slibdir=/lib
 
 make
@@ -39,6 +42,9 @@ touch /etc/ld.so.conf
 sed '/test-installation/s@$(PERL)@echo not running@' -i ../Makefile
 
 make install
+
+# fix hardcoded path to the executable loaer in ldd script
+sed '/RTLDLIST=/s@/usr@@g' -i /usr/bin/ldd
 
 cp -v ../nscd/nscd.conf /etc/nscd.conf
 mkdir -pv /var/cache/nscd
@@ -72,3 +78,24 @@ localedef -i zh_CN -f GB18030 zh_CN.GB18030
 localedef -i zh_HK -f BIG5-HKSCS zh_HK.BIG5-HKSCS
 
 make localedata/install-locales
+
+localedef -i POSIX -f UTF-8 C.UTF-8 2> /dev/null || true
+localedef -i ja_JP -f SHIFT_JIS ja_JP.SIJS 2> /dev/null || true
+
+cat > /etc/nsswitch.conf << "EOF"
+# Begin /etc/nsswitch.conf
+
+passwd: files
+group: files
+shadow: files
+
+hosts: files dns
+networks: files
+
+protocols: files
+services: files
+ethers: files
+rpc: files
+
+# End /etc/nsswitch.conf
+EOF
