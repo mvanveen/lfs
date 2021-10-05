@@ -1,0 +1,53 @@
+--- a/configure
++++ b/configure
+@@ -16653,7 +16653,7 @@ else
+ fi
+
+
+-RAW_CXX_FOR_TARGET="$CXX_FOR_TARGET"
++RAW_CXX_FOR_TARGET="$CXX_FOR_TARGET -nostdinc++"
+
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target ar" >&5
+ $as_echo_n "checking where to find the target ar... " >&6; }
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -3515,7 +3515,7 @@ ACX_CHECK_INSTALLED_TARGET_TOOL(STRIP_FOR_TARGET, strip)
+ ACX_CHECK_INSTALLED_TARGET_TOOL(WINDRES_FOR_TARGET, windres)
+ ACX_CHECK_INSTALLED_TARGET_TOOL(WINDMC_FOR_TARGET, windmc)
+
+-RAW_CXX_FOR_TARGET="$CXX_FOR_TARGET"
++RAW_CXX_FOR_TARGET="$CXX_FOR_TARGET -nostdinc++"
+
+ GCC_TARGET_TOOL(ar, AR_FOR_TARGET, AR, [binutils/ar])
+ GCC_TARGET_TOOL(as, AS_FOR_TARGET, AS, [gas/as-new])
+
+--- a/libstdc++-v3/include/c_compatibility/fenv.h
++++ b/libstdc++-v3/include/c_compatibility/fenv.h
+@@ -26,6 +26,10 @@
+  *  This is a Standard C++ Library header.
+  */
+ 
++#if !defined __cplusplus || defined _GLIBCXX_INCLUDE_NEXT_C_HEADERS
++# include_next <fenv.h>
++#endif
++
+ #ifndef _GLIBCXX_FENV_H
+ #define _GLIBCXX_FENV_H 1
+ 
+--- a/libstdc++-v3/include/c_global/cfenv
++++ b/libstdc++-v3/include/c_global/cfenv
+@@ -37,9 +37,11 @@
+ 
+ #include <bits/c++config.h>
+ 
+-#if _GLIBCXX_HAVE_FENV_H
+-# include <fenv.h>
+-#endif
++// Need to ensure this finds the C library's <fenv.h> not a libstdc++
++// wrapper that might already be installed later in the include search path.
++#define _GLIBCXX_INCLUDE_NEXT_C_HEADERS
++#include_next <fenv.h>
++#undef _GLIBCXX_INCLUDE_NEXT_C_HEADERS
+ 
+ #ifdef _GLIBCXX_USE_C99_FENV_TR1
