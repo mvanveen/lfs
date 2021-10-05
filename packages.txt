@@ -42,7 +42,7 @@ https://www.kernel.org/pub/linux/libs/security/linux-privs/libcap2/libcap-2.31.t
 ftp://sourceware.org/pub/libffi/libffi-3.3.tar.gz
 http://ftp.gnu.org/gnu/libtool/libtool-2.4.6.tar.xz
 https://mirrors.edge.kernel.org/pub/linux/kernel/v5.x/linux-5.13.19.tar.gz
-http://ftp.gnu.org/gnu/m4/m4-1.4.18.tar.xz
+http://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz
 http://ftp.gnu.org/gnu/make/make-4.3.tar.gz
 https://download.savannah.gnu.org/releases/man-db/man-db-2.9.4.tar.xz
 https://www.kernel.org/pub/linux/docs/man-pages/man-pages-5.13.tar.xz
@@ -83,3 +83,4 @@ https://www.linuxfromscratch.org/patches/lfs/11.0/glibc-2.34-fhs-1.patch
 http://www.linuxfromscratch.org/patches/lfs/9.1/kbd-2.2.0-backspace-1.patch
 http://www.linuxfromscratch.org/patches/lfs/9.1/sysvinit-2.96-consolidated-1.patch
 http://download.savannah.gnu.org/releases/libpipeline/libpipeline-1.5.2.tar.gz
+http://landley.net/toybox/downloads/toybox-0.8.5.tar.gz

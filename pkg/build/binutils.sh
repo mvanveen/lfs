@@ -11,28 +11,17 @@ expect -c "spawn ls"
 sed -i '/@\tincremental_copy/d' gold/testsuite/Makefile.in
 
 mkdir -v build
+
+chown -R lfs .
+chmod -R 777 .
+
 cd       build
 
-../configure --prefix=$LFS/tools \
+su lfs -c "../configure --prefix=$LFS/tools \
              --with-sysroot=$LFS \
              --target=$LFS_TGT   \
              --disable-nls       \
-             --disable-werror
+             --disable-werror"
 
-#../configure --prefix=/usr       \
-#             --enable-gold       \
-#             --enable-ld=default \
-#             --enable-plugins    \
-#             --enable-shared     \
-#             --disable-werror    \
-#             --enable-64-bit-bfd \
-#             --with-system-zlib
-#make -j 1 tooldir=/usr
-#
-#make -k check
-#
-#make tooldir=/usr install
-
-make -j $NUM_PROCS
-
-make -j1 install
+su lfs -c "make -j $NUM_PROCS"
+su lfs -c "make -j1 install"

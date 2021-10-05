@@ -41,33 +41,39 @@ cd build
 chmod -R 777 /mnt/lfs/sources/gcc-11.2.0
 chown -R lfs /mnt/lfs/sources/gcc-11.2.0
 
-su lfs -c "../configure                                       \
-    --target=$LFS_TGT                              \
-    --prefix=$LFS/tools                                \
-    --with-glibc-version=2.11                      \
-    --with-sysroot=$LFS                            \
-    --with-newlib                                  \
-    --without-headers                              \
-    --enable-initfini-array                        \
-    --disable-nls                                  \
-    --disable-shared                               \
-    --disable-multilib                             \
-    --disable-decimal-float                        \
-    --disable-threads                              \
-    --disable-libatomic                            \
-    --disable-libgomp                              \
-    --disable-libquadmath                          \
-    --disable-libssp                               \
-    --disable-libvtv                               \
-    --disable-libstdcxx                            \
-    --enable-languages=c,c++"
+su lfs -c " ../configure \
+	--target=$LFS_TGT                       \
+	--prefix=$LFS/tools                     \
+        --with-glibc-version=2.11               \
+        --with-sysroot=$LFS                     \
+        --with-newlib                           \
+        --without-headers                       \
+        --enable-initfini-array                 \
+        --disable-nls                           \
+        --disable-shared                        \
+        --disable-multilib                      \
+        --disable-decimal-float                 \
+        --disable-threads                       \
+        --disable-libatomic                     \
+        --disable-libgomp                       \
+        --disable-libquadmath                   \
+        --disable-libssp                        \
+        --disable-libvtv                        \
+        --disable-libstdcxx                     \
+        --enable-languages=c,c++"
 
 su lfs -c "make -j $NUM_PROCS"
 
-ulimit -s 32768
+#ulimit -s 32768
+##PATH=/usr/lib/ccache:$PATH CCACHE_CONFIGPATH=/root/.ccache cache -z
+#
+#chown -Rv tester .
+#su tester -c "$PATH make -k -j $NUM_PROCS check" | tee /var/log/gcc-pass-1-check.log
+#
+#../contrib/test_summary
 
-chown -Rv tester .
-su tester -c "PATH=$PATH make -k check" | tee /var/log/gcc-pass-1-check.log
+su lfs -c "make install"
 
-../contrib/test_summary
-make install
+su lfs -c "cd .. && \
+    cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
+        `dirname $($LFS_TGT-gcc -print-libgcc-file-name)`/install-tools/include/limits.h"

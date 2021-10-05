@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #trap 'failed' 0
 
 set -e
@@ -15,14 +15,23 @@ source gcc-pass1.sh
 cd /mnt/lfs/sources
 source make-linux-api-headers.sh
 
-#source glibc.sh
-#source libstdcplusplus.sh
+cd /mnt/lfs/sources
+source toybox.sh
+
+cd /mnt/lfs/sources
+source glibc.sh
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/libstdcplusplus-pass1.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "source m4.sh"
+
 #source binutils-pass-2.sh
 #source gcc-pass2.sh
 #source tcl.sh
 #source expect.sh
 #source dejagnu.sh
-#source m4.sh
 #source ncurses.sh
 #source bash.sh
 #source bison.sh

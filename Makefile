@@ -5,7 +5,7 @@ docker-run:
 	#docker run -v sources:/sources -p 2222:22 -d linuxfromscratch
 	#-v ${CURDIR}/lfs.img:/root/lfs.img 
 	#docker run -p 2222:22 --privileged linuxfromscratch
-	$(eval CONTAINER := $(shell docker run -d linuxfromscratch))
+	$(eval CONTAINER := $(shell docker run -v /home/mvv/lfs/cachedir:/root/.ccache -d linuxfromscratch))
 	docker exec -it $(CONTAINER) "/root/run.sh"
 
 all: docker-build docker-run
