@@ -1,3 +1,8 @@
+#!/usr/bin/env bash
+source /home/lfs/.bashrc
+
+set -ex
+
 cd /mnt/lfs/sources
 
 rm -rf m4-1.4.19
@@ -14,6 +19,6 @@ echo "#define _IO_IN_BACKUP 0x100" >> lib/stdio-impl.h
 
 make
 
-make check
+#make check
 
 make DESTDIR=$LFS install

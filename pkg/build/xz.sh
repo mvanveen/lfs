@@ -1,18 +1,23 @@
-cd /sources;
+#!/usr/bin/env bash
+source /home/lfs/.bashrc
 
-rm -rf xz-5.2.4;
-tar xf xz-5.2.4.tar.xz
-cd xz-5.2.4
+set -ex
 
-./configure --prefix=/usr    \
-            --disable-static \
-	    --docdir=/usr/share/doc/xz-5.2.4
+cd /mnt/lfs/sources
+
+rm -rf xz-5.2.5;
+tar xf xz-5.2.5.tar.xz
+cd xz-5.2.5
+
+./configure \
+    --prefix=/usr    \
+    --target=$LFS_TGT \
+    --build=$(build-aux/config.guess) \
+    --disable-static \
+    --docdir=/usr/share/doc/xz-5.2.5
 
 make
 
 make check
 
-make install
-mv -v   /usr/bin/{lzma,unlzma,lzcat,xz,unxz,xzcat} /bin
-mv -v /usr/lib/liblzma.so.* /lib
-ln -svf ../../lib/$(readlink /usr/lib/liblzma.so) /usr/lib/liblzma.so
+make DESTDIR=$LFS install

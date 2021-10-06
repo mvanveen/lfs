@@ -1,17 +1,19 @@
-cd /sources
+#!/usr/bin/env bash
+source /home/lfs/.bashrc
 
-rm -rf tar-1.32
-tar xf tar-1.32.tar.xz
-cd tar-1.32
+set -ex
 
-FORCE_UNSAFE_CONFIGURE=1  \
-./configure --prefix=/usr \
-            --bindir=/bin
+cd /mnt/lfs/sources
+
+rm -rf tar-1.34
+tar xf tar-1.34.tar.xz
+cd tar-1.34
+
+./configure \
+    --prefix=/usr \
+    --host=$LFS_TGT \
+    --build=$(build-aux/config.guess)
 
 make
 
-make check
-
-make install
-
-make -C doc install-html docdir=/usr/share/doc/tar-1.32
+make DESTDIR=$LFS install

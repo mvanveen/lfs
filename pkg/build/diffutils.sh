@@ -1,13 +1,18 @@
-cd /sources
+#!/usr/bin/env bash
+source /home/lfs/.bashrc
 
-rm -rf diffutils-3.7
-tar xf diffutils-3.7.tar.xz
-cd diffutils-3.7
+set -ex
 
-./configure --prefix=/usr
+cd /mnt/lfs/sources
+
+rm -rf diffutils-3.8
+tar xf diffutils-3.8.tar.xz
+cd diffutils-3.8
+
+./configure --prefix=/usr --host=$LFS_TGT
 
 make
 
-make check
+#make check
 
-make install
+make DESTDIR=$LFS install

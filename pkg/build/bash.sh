@@ -1,23 +1,27 @@
-cd /sources
+#!/usr/bin/env bash
+source /home/lfs/.bashrc
 
-rm -rf bash-5.0
-tar xzf bash-5.0.tar.gz
-cd bash-5.0
+set -ex
 
-patch -Np1 -i ../bash-5.0-upstream_fixes-1.patch
+source /home/lfs/.bashrc
+
+rm -rf bash-5.1.8
+tar xzf bash-5.1.8.tar.gz
+cd bash-5.1.8
+
+#patch -Np1 -i ../bash-5.0-upstream_fixes-1.patch
 
 ./configure --prefix=/usr                    \
-            --docdir=/usr/share/doc/bash-5.0 \
+	    --build=$(support/config.guess) \
+	    --host=$LFS_TGT \
             --without-bash-malloc            \
-            --with-installed-readline
 
 make
 
-chown -Rv nobody .
+make DESTDIR=$LFS install
 
-su nobody -s /bin/bash -c "PATH=$PATH HOME=/home make tests"
 
-make install
-mv -vf /usr/bin/bash /bin
+mkdir -p $LFS/bin
+ln -sv bash $LFS/bin/sh
 
 #exec /bin/bash --login +h

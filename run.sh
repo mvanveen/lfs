@@ -27,27 +27,50 @@ su lfs -c "/mnt/lfs/sources/libstdcplusplus-pass1.sh"
 cd /mnt/lfs/sources
 su lfs -c "source m4.sh"
 
-#source binutils-pass-2.sh
-#source gcc-pass2.sh
-#source tcl.sh
-#source expect.sh
-#source dejagnu.sh
-#source ncurses.sh
-#source bash.sh
-#source bison.sh
-#source bzip2.sh
-#source coreutils.sh
-#source diffutils.sh
-#source file.sh
-#source findutils.sh
-#source gawk.sh
-#source gettext.sh
-#source grep.sh
-#source make.sh
-#source patch.sh
-#source perl.sh
-#source python.sh
-#source sed.sh
-#source tar.sh
-#source texinfo.sh
-#source xz.sh
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/ncurses.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/bash.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/coreutils.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/diffutils.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/file.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/findutils.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/gawk.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/grep.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/gzip.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/make.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/patch.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/sed.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/tar.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/xz.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/binutils-pass2.sh"
+
+cd /mnt/lfs/sources
+su lfs -c "/mnt/lfs/sources/gcc-pass2.sh"
