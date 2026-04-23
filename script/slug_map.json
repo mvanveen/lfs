@@ -1,0 +1,362 @@
+{
+  "Python": {
+    "dir": "Python-3.13.7",
+    "tarball": "Python-3.13.7.tar.xz"
+  },
+  "acl": {
+    "dir": "acl-2.3.2",
+    "tarball": "acl-2.3.2.tar.xz"
+  },
+  "attr": {
+    "dir": "attr-2.5.2",
+    "tarball": "attr-2.5.2.tar.gz"
+  },
+  "autoconf": {
+    "dir": "autoconf-2.72",
+    "tarball": "autoconf-2.72.tar.xz"
+  },
+  "automake": {
+    "dir": "automake-1.18.1",
+    "tarball": "automake-1.18.1.tar.xz"
+  },
+  "bash": {
+    "dir": "bash-5.3",
+    "tarball": "bash-5.3.tar.gz"
+  },
+  "bc": {
+    "dir": "bc-7.0.3",
+    "tarball": "bc-7.0.3.tar.xz"
+  },
+  "binutils": {
+    "dir": "binutils-2.45",
+    "tarball": "binutils-2.45.tar.xz"
+  },
+  "binutils-pass1": {
+    "dir": "binutils-2.45",
+    "tarball": "binutils-2.45.tar.xz"
+  },
+  "binutils-pass2": {
+    "dir": "binutils-2.45",
+    "tarball": "binutils-2.45.tar.xz"
+  },
+  "bison": {
+    "dir": "bison-3.8.2",
+    "tarball": "bison-3.8.2.tar.xz"
+  },
+  "bzip2": {
+    "dir": "bzip2-1.0.8",
+    "tarball": "bzip2-1.0.8.tar.gz"
+  },
+  "coreutils": {
+    "dir": "coreutils-9.7",
+    "tarball": "coreutils-9.7.tar.xz"
+  },
+  "dejagnu": {
+    "dir": "dejagnu-1.6.3",
+    "tarball": "dejagnu-1.6.3.tar.gz"
+  },
+  "diffutils": {
+    "dir": "diffutils-3.12",
+    "tarball": "diffutils-3.12.tar.xz"
+  },
+  "e2fsprogs": {
+    "dir": "e2fsprogs-1.47.3",
+    "tarball": "e2fsprogs-1.47.3.tar.gz"
+  },
+  "expat": {
+    "dir": "expat-2.7.1",
+    "tarball": "expat-2.7.1.tar.xz"
+  },
+  "file": {
+    "dir": "file-5.46",
+    "tarball": "file-5.46.tar.gz"
+  },
+  "findutils": {
+    "dir": "findutils-4.10.0",
+    "tarball": "findutils-4.10.0.tar.xz"
+  },
+  "flex": {
+    "dir": "flex-2.6.4",
+    "tarball": "flex-2.6.4.tar.gz"
+  },
+  "flit-core": {
+    "dir": "flit_core-3.12.0",
+    "tarball": "flit_core-3.12.0.tar.gz"
+  },
+  "gawk": {
+    "dir": "gawk-5.3.2",
+    "tarball": "gawk-5.3.2.tar.xz"
+  },
+  "gcc": {
+    "dir": "gcc-15.2.0",
+    "tarball": "gcc-15.2.0.tar.xz"
+  },
+  "gcc-libstdc++": {
+    "dir": "gcc-15.2.0",
+    "tarball": "gcc-15.2.0.tar.xz"
+  },
+  "gcc-pass1": {
+    "dir": "gcc-15.2.0",
+    "tarball": "gcc-15.2.0.tar.xz"
+  },
+  "gcc-pass2": {
+    "dir": "gcc-15.2.0",
+    "tarball": "gcc-15.2.0.tar.xz"
+  },
+  "gdbm": {
+    "dir": "gdbm-1.26",
+    "tarball": "gdbm-1.26.tar.gz"
+  },
+  "gettext": {
+    "dir": "gettext-0.26",
+    "tarball": "gettext-0.26.tar.xz"
+  },
+  "glibc": {
+    "dir": "glibc-2.42",
+    "tarball": "glibc-2.42.tar.xz"
+  },
+  "gmp": {
+    "dir": "gmp-6.3.0",
+    "tarball": "gmp-6.3.0.tar.xz"
+  },
+  "gperf": {
+    "dir": "gperf-3.3",
+    "tarball": "gperf-3.3.tar.gz"
+  },
+  "grep": {
+    "dir": "grep-3.12",
+    "tarball": "grep-3.12.tar.xz"
+  },
+  "groff": {
+    "dir": "groff-1.23.0",
+    "tarball": "groff-1.23.0.tar.gz"
+  },
+  "grub": {
+    "dir": "grub-2.12",
+    "tarball": "grub-2.12.tar.xz"
+  },
+  "gzip": {
+    "dir": "gzip-1.14",
+    "tarball": "gzip-1.14.tar.xz"
+  },
+  "iana-etc": {
+    "dir": "iana-etc-20250807",
+    "tarball": "iana-etc-20250807.tar.gz"
+  },
+  "inetutils": {
+    "dir": "inetutils-2.6",
+    "tarball": "inetutils-2.6.tar.xz"
+  },
+  "intltool": {
+    "dir": "intltool-0.51.0",
+    "tarball": "intltool-0.51.0.tar.gz"
+  },
+  "iproute2": {
+    "dir": "iproute2-6.16.0",
+    "tarball": "iproute2-6.16.0.tar.xz"
+  },
+  "jinja2": {
+    "dir": "jinja2-3.1.6",
+    "tarball": "jinja2-3.1.6.tar.gz"
+  },
+  "kbd": {
+    "dir": "kbd-2.8.0",
+    "tarball": "kbd-2.8.0.tar.xz"
+  },
+  "kernel": {
+    "dir": "linux-6.16.1",
+    "tarball": "linux-6.16.1.tar.xz"
+  },
+  "kmod": {
+    "dir": "kmod-34.2",
+    "tarball": "kmod-34.2.tar.xz"
+  },
+  "less": {
+    "dir": "less-679",
+    "tarball": "less-679.tar.gz"
+  },
+  "lfs-bootscripts": {
+    "dir": "lfs-bootscripts-20250827",
+    "tarball": "lfs-bootscripts-20250827.tar.xz"
+  },
+  "libcap": {
+    "dir": "libcap-2.76",
+    "tarball": "libcap-2.76.tar.xz"
+  },
+  "libelf": {
+    "dir": "elfutils-0.193",
+    "tarball": "elfutils-0.193.tar.bz2"
+  },
+  "libffi": {
+    "dir": "libffi-3.5.2",
+    "tarball": "libffi-3.5.2.tar.gz"
+  },
+  "libtool": {
+    "dir": "libtool-2.5.4",
+    "tarball": "libtool-2.5.4.tar.xz"
+  },
+  "libxcrypt": {
+    "dir": "libxcrypt-4.4.38",
+    "tarball": "libxcrypt-4.4.38.tar.xz"
+  },
+  "linux-headers": {
+    "dir": "linux-6.16.1",
+    "tarball": "linux-6.16.1.tar.xz"
+  },
+  "lz4": {
+    "dir": "lz4-1.10.0",
+    "tarball": "lz4-1.10.0.tar.gz"
+  },
+  "m4": {
+    "dir": "m4-1.4.20",
+    "tarball": "m4-1.4.20.tar.xz"
+  },
+  "make": {
+    "dir": "make-4.4.1",
+    "tarball": "make-4.4.1.tar.gz"
+  },
+  "man-db": {
+    "dir": "man-db-2.13.1",
+    "tarball": "man-db-2.13.1.tar.xz"
+  },
+  "man-pages": {
+    "dir": "man-pages-6.15",
+    "tarball": "man-pages-6.15.tar.xz"
+  },
+  "markupsafe": {
+    "dir": "markupsafe-3.0.2",
+    "tarball": "markupsafe-3.0.2.tar.gz"
+  },
+  "meson": {
+    "dir": "meson-1.8.3",
+    "tarball": "meson-1.8.3.tar.gz"
+  },
+  "mpc": {
+    "dir": "mpc-1.3.1",
+    "tarball": "mpc-1.3.1.tar.gz"
+  },
+  "mpfr": {
+    "dir": "mpfr-4.2.2",
+    "tarball": "mpfr-4.2.2.tar.xz"
+  },
+  "ncurses": {
+    "dir": "ncurses-6.5-20250809",
+    "tarball": "ncurses-6.5-20250809.tgz"
+  },
+  "ninja": {
+    "dir": "ninja-1.13.1",
+    "tarball": "ninja-1.13.1.tar.gz"
+  },
+  "openssl": {
+    "dir": "openssl-3.5.2",
+    "tarball": "openssl-3.5.2.tar.gz"
+  },
+  "packaging": {
+    "dir": "packaging-25.0",
+    "tarball": "packaging-25.0.tar.gz"
+  },
+  "patch": {
+    "dir": "patch-2.8",
+    "tarball": "patch-2.8.tar.xz"
+  },
+  "perl": {
+    "dir": "perl-5.42.0",
+    "tarball": "perl-5.42.0.tar.xz"
+  },
+  "pkgconf": {
+    "dir": "pkgconf-2.5.1",
+    "tarball": "pkgconf-2.5.1.tar.xz"
+  },
+  "procps-ng": {
+    "dir": "procps-ng-4.0.5",
+    "tarball": "procps-ng-4.0.5.tar.xz"
+  },
+  "psmisc": {
+    "dir": "psmisc-23.7",
+    "tarball": "psmisc-23.7.tar.xz"
+  },
+  "python": {
+    "dir": "Python-3.13.7",
+    "tarball": "Python-3.13.7.tar.xz"
+  },
+  "readline": {
+    "dir": "readline-8.3",
+    "tarball": "readline-8.3.tar.gz"
+  },
+  "sed": {
+    "dir": "sed-4.9",
+    "tarball": "sed-4.9.tar.xz"
+  },
+  "setuptools": {
+    "dir": "setuptools-80.9.0",
+    "tarball": "setuptools-80.9.0.tar.gz"
+  },
+  "shadow": {
+    "dir": "shadow-4.18.0",
+    "tarball": "shadow-4.18.0.tar.xz"
+  },
+  "sysklogd": {
+    "dir": "sysklogd-2.7.2",
+    "tarball": "sysklogd-2.7.2.tar.gz"
+  },
+  "systemd-man-pages": {
+    "dir": "systemd-man-pages-257.8",
+    "tarball": "systemd-man-pages-257.8.tar.xz"
+  },
+  "sysvinit": {
+    "dir": "sysvinit-3.14",
+    "tarball": "sysvinit-3.14.tar.xz"
+  },
+  "tar": {
+    "dir": "tar-1.35",
+    "tarball": "tar-1.35.tar.xz"
+  },
+  "tcl": {
+    "dir": "tcl8.6.16",
+    "tarball": "tcl8.6.16-src.tar.gz"
+  },
+  "texinfo": {
+    "dir": "texinfo-7.2",
+    "tarball": "texinfo-7.2.tar.xz"
+  },
+  "tzdata": {
+    "dir": "tzdata2025b",
+    "tarball": "tzdata2025b.tar.gz"
+  },
+  "udev": {
+    "dir": "systemd-257.8",
+    "tarball": "systemd-257.8.tar.gz"
+  },
+  "udev-lfs": {
+    "dir": "udev-lfs-20230818",
+    "tarball": "udev-lfs-20230818.tar.xz"
+  },
+  "util-linux": {
+    "dir": "util-linux-2.41.1",
+    "tarball": "util-linux-2.41.1.tar.xz"
+  },
+  "vim": {
+    "dir": "vim-9.1.1629",
+    "tarball": "vim-9.1.1629.tar.gz"
+  },
+  "wheel": {
+    "dir": "wheel-0.46.1",
+    "tarball": "wheel-0.46.1.tar.gz"
+  },
+  "xml-parser": {
+    "dir": "XML-Parser-2.47",
+    "tarball": "XML-Parser-2.47.tar.gz"
+  },
+  "xz": {
+    "dir": "xz-5.8.1",
+    "tarball": "xz-5.8.1.tar.xz"
+  },
+  "zlib": {
+    "dir": "zlib-1.3.1",
+    "tarball": "zlib-1.3.1.tar.gz"
+  },
+  "zstd": {
+    "dir": "zstd-1.5.7",
+    "tarball": "zstd-1.5.7.tar.gz"
+  }
+}

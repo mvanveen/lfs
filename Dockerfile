@@ -1,19 +1,30 @@
-FROM ubuntu:18.04
+# Ubuntu-based build host for Linux From Scratch 12.4 (SysV).
+# See: https://www.linuxfromscratch.org/lfs/view/stable/chapter02/hostreqs.html
+FROM ubuntu:24.04
 
-ENV LFS /
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LFS=/mnt/lfs
 
-RUN apt-get update
-RUN apt-get install -y build-essential openssh-server python3 gawk bison texinfo kpartx
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      build-essential openssh-server wget curl ca-certificates \
+      bison gawk texinfo python3 python3-distutils-extra \
+      m4 gperf gettext autopoint flex file xz-utils bzip2 \
+      patch kpartx parted dosfstools sudo less vim-tiny \
+      libncurses-dev pkg-config && \
+    rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /root/.ssh
-RUN chmod 0700 /root/.ssh
-RUN ssh-keygen -A
-RUN sed -i s/^#PasswordAuthentication\ yes/PasswordAuthentication\ no/ /etc/ssh/sshd_config
-RUN sed -i s/^#PermitRootLogin\ prohibit-password/PermitRootLogin\ yes/ /etc/ssh/sshd_config
-RUN sed -i -e 's/^root:!:/root::/' /etc/shadow
+# Ensure /bin/sh is bash (required by LFS).
+RUN ln -sfv bash /bin/sh
 
-RUN wget https://github.com/mvanveen.keys -O /root/.ssh/authorized_keys
+# SSH: root login via authorized_keys only.
+RUN mkdir -p /root/.ssh /var/run/sshd && chmod 700 /root/.ssh && ssh-keygen -A
+RUN sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config \
+ && sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin prohibit-password/' /etc/ssh/sshd_config \
+ && sed -i -e 's/^root:!:/root::/' /etc/shadow
 
-ADD run.sh .
+# Pull public keys from GitHub for SSH auth.
+RUN wget -q https://github.com/mvanveen.keys -O /root/.ssh/authorized_keys \
+ && chmod 600 /root/.ssh/authorized_keys
 
-CMD ["/bin/sh", "run.sh"]
+ADD run.sh /run.sh
+CMD ["/bin/bash", "/run.sh"]

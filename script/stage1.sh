@@ -1,15 +1,14 @@
-export LFS=/mnt/lfs
-mkdir -v $LFS/tools
-mkdir -v $LFS/sources
-chown -v lfs $LFS/tools
+#!/bin/bash
+# Stage 1 (runs as lfs@localhost): chapters 5 & 6 of LFS 12.4.
+#   - chapter 5: cross-compilation toolchain into $LFS/tools
+#   - chapter 6: cross-compiled temporary tools into $LFS/usr
+set -euxo pipefail
 
-chown -v lfs $LFS/sources
-chmod -v a+wt $LFS/sources
+export LFS=${LFS:-/mnt/lfs}
+. ~/.bashrc
 
-ln -s $LFS/tools /
+cd "$LFS/sources"
+md5sum -c md5sums || { echo "checksums failed"; exit 1; }
 
-rm -f /usr/bin/awk
-ln -s /usr/bin/gawk /usr/bin/awk
-
-rm -f /usr/bin/yacc
-ln -s /usr/bin/bison /usr/bin/yacc
+bash "$LFS/sources/pkg/ch5-toolchain/run-all.sh"
+bash "$LFS/sources/pkg/ch6-crosstools/run-all.sh"
