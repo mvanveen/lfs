@@ -1,76 +1,77 @@
 Linux From Scratch
 ==================
 
-Automated build scripts for **[Linux From Scratch 12.4 (SysV)][lfs]**.
+Automated build of **[Linux From Scratch 12.4 (SysV)][lfs]** inside a
+Dockerized Ubuntu 24.04 host.
 
 [lfs]: https://www.linuxfromscratch.org/lfs/view/stable/
-
-### Overview
-
-- A privileged `ubuntu:24.04` Docker container acts as the LFS host system
-  (see [LFS ch 2 host requirements][hostreqs]).
-- Inside the container we create a sparse loopback disk image, partition it,
-  format ext4, and mount it at `/mnt/lfs`.
-- The book's procedure is then followed end-to-end:
-    - **Stage 0** (root): create the `lfs` user, `$LFS/{sources,tools}`, env.
-    - **Stage 1** (`lfs` user): chapters 5 and 6 — build the cross-compilation
-      toolchain in `$LFS/tools`, then cross-compile the temporary userland
-      into `$LFS/usr`.
-    - **Stage 2** (root): chapter 7 (pivot into chroot), chapter 8 (final
-      system), chapter 9 (system config), chapter 10 (kernel + GRUB).
-- All commands are driven over SSH from the host; the `pkg/` directory holds
-  one shell script per book section (e.g. `pkg/ch5-toolchain/binutils-pass1.sh`).
-  Each script was generated directly from the book's `<pre class="userinput">`
-  blocks, so it mirrors the book verbatim (with a few obviously-interactive
-  commands such as `make menuconfig` replaced by `make defconfig`).
-
-[hostreqs]: https://www.linuxfromscratch.org/lfs/view/stable/chapter02/hostreqs.html
 
 ### Layout
 
 ```
-Dockerfile             # ubuntu:24.04 build host image
-Makefile               # end-to-end driver (host side)
-packages.txt           # wget-list-sysv from the book
-md5sums                # md5sums from the book
+Dockerfile             # ubuntu:24.04 build host
+Makefile               # end-to-end driver on the host side
+packages.txt           # book's wget-list-sysv
+md5sums                # book's md5sums
 script/
-  mkext4.sh            # create & mount the loopback disk image
-  stage0.sh            # create lfs user, $LFS layout
-  stage1.sh            # run ch5 + ch6 as the lfs user
-  stage2.sh            # chown, mount vkfs, chroot, then stage3
+  mkext4.sh            # partition + format + mount the loopback image
+  stage0.sh            # create the `lfs` user, $LFS/{sources,tools}, env
+  stage1.sh            # as lfs: driver for pkg/prep (ch 5 + 6)
+  gen_scripts.py       # regenerate pkg/ from scraped book pages
+  extract_book.py      # scrape <pre class="userinput"> from the book
+  book-html/           # cached raw snippets (so gen is offline)
 pkg/
-  stage3.sh            # runs inside chroot: ch7 -> ch10
-  ch5-toolchain/       # cross toolchain (binutils-pass1 ... gcc-libstdc++)
-  ch6-crosstools/      # cross-compiled temporary tools
-  ch7-chroot-tools/    # additional temporary tools (built in chroot)
-  ch8-system/          # the final LFS system (~75 packages)
-  ch9-config/          # system configuration
-  ch10-boot/           # kernel + GRUB
+  prep/                # cross toolchain + cross-compiled temp tools
+    *.sh               # one per package, run as the lfs user
+    run-prep.sh        # drives them in book order
+  build/               # final system, system config, kernel + GRUB
+    *.sh               # one per package, run inside chroot
+    as-chroot.sh       # inside chroot: runs every build/*.sh in order
+    run-build.sh       # outside chroot: mounts vkfs, chroots, -> as-chroot.sh
 ```
 
-Each chapter directory has a `run-all.sh` that invokes its packages in the
-order the book presents them.
+### Build flow
+
+`make all` chains the following targets:
+
+| target       | runs                                                 |
+|--------------|------------------------------------------------------|
+| docker-build | build the Ubuntu 24.04 LFS-host image                |
+| docker-run   | start the container (privileged; sshd on :2222)     |
+| mkimg        | create/partition/format a sparse loopback image, mount at /mnt/lfs |
+| prep-host    | create the `lfs` user and `$LFS/{sources,tools}`     |
+| dl-sources   | `wget -i packages.txt` into /mnt/lfs/sources         |
+| upload-pkgs  | bulk-copy `pkg/prep` and `pkg/build` into /mnt/lfs/sources |
+| prep-pkgs    | (lfs user) run `pkg/prep/run-prep.sh` — chapters 5+6 |
+| build-pkgs   | (root)     run `pkg/build/run-build.sh` — chapters 7–10 |
+
+Individual targets are re-runnable.  `ssh` / `ssh-lfs` give interactive
+sessions into the container as root / lfs, which is handy for poking at a
+failed build.
+
+### Regenerating the package scripts
+
+The scripts under `pkg/` are generated directly from the book's
+`<pre class="userinput">` blocks.  To retarget a future LFS release:
+
+```bash
+python3 script/extract_book.py script/book-html   # rescrape the book
+# Update packages.txt + md5sums from the new book.
+# Edit script/slug_map.json if tarball filenames/dirs changed.
+python3 script/gen_scripts.py                     # regenerate pkg/prep + pkg/build
+```
 
 ### Requirements
 
-On the host machine: Docker (with privileged containers so the build container
-can drive loop devices), `make`, and an SSH key registered at
-`github.com/<yourname>.keys` — see `Dockerfile`; adjust to point at your own
-keys file.
+Host: Docker (privileged containers, so loop devices work) and `make`.
+The image pulls `https://github.com/mvanveen.keys` for SSH auth — change
+that URL in the Dockerfile if you're not me.
 
-### Usage
+### Lint
 
 ```bash
-$ make all
+make lint
 ```
 
-This runs every step, from image build through `grub-install`. Individual
-targets (`docker-build`, `mkimg`, `prep-host`, `dl-sources`, `upload-build`,
-`run-stage1`, `run-stage2`, `ssh`, `ssh-lfs`) let you re-run pieces.
-
-### Notes on updating
-
-The `pkg/*/*.sh` scripts were generated by scraping the book pages. To target
-a different LFS release, update `packages.txt` and `md5sums` from the book's
-`wget-list-sysv` / `md5sums`, then re-scrape the chapter pages into new
-scripts (see `script/gen_scripts.py` in the repo history).
+runs `shellcheck -S warning` over every shell script, `hadolint` on the
+Dockerfile, `bash -n` for syntax, and `py_compile` on the generators.

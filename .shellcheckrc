@@ -10,6 +10,10 @@ disable=SC2155
 disable=SC2217
 disable=SC2226
 disable=SC2061
+# Book commands use bare `cd`; bail-on-fail wrappers would distort them.
+disable=SC2164
+# Book scripts are sourced (no shebang); the driver sets -e for us.
+disable=SC2148
 # ShellCheck can't resolve `. ~/.bashrc` and similar sources in this tree.
 disable=SC1090
 disable=SC1091

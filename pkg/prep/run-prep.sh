@@ -1,0 +1,26 @@
+#!/bin/bash
+# Drive pkg/prep/*.sh in book order (runs as the lfs user).
+set -e
+
+(source /mnt/lfs/sources/prep/binutils-pass1.sh)
+(source /mnt/lfs/sources/prep/gcc-pass1.sh)
+(source /mnt/lfs/sources/prep/linux-headers.sh)
+(source /mnt/lfs/sources/prep/glibc.sh)
+(source /mnt/lfs/sources/prep/gcc-libstdc++.sh)
+(source /mnt/lfs/sources/prep/m4.sh)
+(source /mnt/lfs/sources/prep/ncurses.sh)
+(source /mnt/lfs/sources/prep/bash.sh)
+(source /mnt/lfs/sources/prep/coreutils.sh)
+(source /mnt/lfs/sources/prep/diffutils.sh)
+(source /mnt/lfs/sources/prep/file.sh)
+(source /mnt/lfs/sources/prep/findutils.sh)
+(source /mnt/lfs/sources/prep/gawk.sh)
+(source /mnt/lfs/sources/prep/grep.sh)
+(source /mnt/lfs/sources/prep/gzip.sh)
+(source /mnt/lfs/sources/prep/make.sh)
+(source /mnt/lfs/sources/prep/patch.sh)
+(source /mnt/lfs/sources/prep/sed.sh)
+(source /mnt/lfs/sources/prep/tar.sh)
+(source /mnt/lfs/sources/prep/xz.sh)
+(source /mnt/lfs/sources/prep/binutils-pass2.sh)
+(source /mnt/lfs/sources/prep/gcc-pass2.sh)
