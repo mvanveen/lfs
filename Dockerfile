@@ -5,6 +5,7 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LFS=/mnt/lfs
 
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
       build-essential openssh-server wget curl ca-certificates \
       bison gawk texinfo python3 python3-distutils-extra \
@@ -14,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Ensure /bin/sh is bash (required by LFS).
+# hadolint ignore=DL4005
 RUN ln -sfv bash /bin/sh
 
 # SSH: root login via authorized_keys only.
@@ -26,5 +28,5 @@ RUN sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/
 RUN wget -q https://github.com/mvanveen.keys -O /root/.ssh/authorized_keys \
  && chmod 600 /root/.ssh/authorized_keys
 
-ADD run.sh /run.sh
+COPY run.sh /run.sh
 CMD ["/bin/bash", "/run.sh"]

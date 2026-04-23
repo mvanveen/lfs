@@ -1,6 +1,8 @@
 #!/bin/bash
 # fstab — from ch10-boot
 # See source URL at top of command list below.
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+# (book commands are reproduced verbatim; these warnings are intentional)
 set -euxo pipefail
 
 # source: https://www.linuxfromscratch.org/lfs/view/stable/chapter10/fstab.html
@@ -11,8 +13,8 @@ cat > /etc/fstab << "EOF"
 # file system  mount-point    type     options             dump  fsck
 #                                                                order
 
-/dev/<xxx>     /              <fff>    defaults            1     1
-/dev/<yyy>     swap           swap     pri=1               0     0
+# TEMPLATE (edit before running): /dev/<xxx>     /              <fff>    defaults            1     1
+# TEMPLATE (edit before running): /dev/<yyy>     swap           swap     pri=1               0     0
 proc           /proc          proc     nosuid,noexec,nodev 0     0
 sysfs          /sys           sysfs    nosuid,noexec,nodev 0     0
 devpts         /dev/pts       devpts   gid=5,mode=620      0     0

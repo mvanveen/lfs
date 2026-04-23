@@ -15,7 +15,7 @@ SCP_LFS        := scp -P $(CONTAINER_PORT) -o StrictHostKeyChecking=no
 
 .PHONY: all docker-build docker-run docker-kill clean undo-known-hosts \
         mkimg prep-host dl-sources upload-build \
-        run-stage1 run-stage2 ssh ssh-lfs
+        run-stage1 run-stage2 ssh ssh-lfs lint
 
 all: docker-kill clean docker-build docker-run mkimg prep-host dl-sources \
      upload-build run-stage1 run-stage2
@@ -77,3 +77,11 @@ ssh:
 
 ssh-lfs:
 	$(SSH_LFS)
+
+# Static analysis for the shell tree and the Dockerfile.
+lint:
+	shellcheck -S warning script/*.sh pkg/*/*.sh run.sh kill_container.sh
+	@command -v hadolint >/dev/null 2>&1 && hadolint Dockerfile \
+	  || docker run --rm -i hadolint/hadolint < Dockerfile
+	bash -n $$(find script pkg -name '*.sh')
+	python3 -m py_compile script/*.py

@@ -1,0 +1,11 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter07/Python.html
+
+./configure --prefix=/usr       \
+            --enable-shared     \
+            --without-ensurepip \
+            --without-static-libpython
+
+make
+
+make install
+

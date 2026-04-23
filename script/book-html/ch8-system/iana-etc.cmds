@@ -1,0 +1,4 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/iana-etc.html
+
+cp services protocols /etc
+

@@ -1,0 +1,10 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/bc.html
+
+CC='gcc -std=c99' ./configure --prefix=/usr -G -O3 -r
+
+make
+
+make test
+
+make install
+

@@ -1,0 +1,7 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/libpipeline.html
+
+./configure --prefix=/usr
+
+make
+
+make install

@@ -1,0 +1,8 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter07/texinfo.html
+
+./configure --prefix=/usr
+
+make
+
+make install
+

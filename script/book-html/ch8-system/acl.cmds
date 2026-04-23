@@ -1,0 +1,12 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/acl.html
+
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/acl-2.3.2
+
+make
+
+make check
+
+make install
+

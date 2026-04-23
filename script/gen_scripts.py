@@ -40,6 +40,12 @@ ORDER = {
 # unattended execution. Replacements preserve intent while keeping the
 # script non-interactive.
 PATCHES = [
+    # Book sometimes uses angle-bracket placeholders (e.g. <paper_size>,
+    # <locale name>, <xxx>, <yyy>, <fff>, <ll>, <CC>). They aren't valid
+    # shell; comment out lines that contain them so automated runs don't
+    # break, but keep the original visible for operators.
+    (re.compile(r'^(.*<(?:paper_size|locale name|xxx|yyy|fff|ll|CC|charmap|@modifiers|lfs|tz)>.*)$', re.MULTILINE),
+     r'# TEMPLATE (edit before running): \1'),
     # re-exec bash to pick up new /etc/passwd+/etc/group entries; harmless to skip in a script
     (re.compile(r'^\s*exec\s+/usr/bin/bash\s+--login\s*$', re.MULTILINE),
      '# exec /usr/bin/bash --login   # skipped: automated build'),
@@ -56,7 +62,14 @@ def render(subdir, slug):
     if not cmds_file.exists(): return None
     cmds_text = cmds_file.read_text()
     info = m.get(slug)
-    header = f'#!/bin/bash\n# {slug} — from {subdir}\n# See source URL at top of command list below.\nset -euxo pipefail\n\n'
+    header = (
+        f'#!/bin/bash\n'
+        f'# {slug} — from {subdir}\n'
+        f'# See source URL at top of command list below.\n'
+        f'# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061\n'
+        f'# (book commands are reproduced verbatim; these warnings are intentional)\n'
+        f'set -euxo pipefail\n\n'
+    )
 
     for pat, rep in PATCHES:
         cmds_text = pat.sub(rep, cmds_text)

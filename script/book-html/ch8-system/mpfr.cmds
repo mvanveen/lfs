@@ -1,0 +1,15 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/mpfr.html
+
+./configure --prefix=/usr        \
+            --disable-static     \
+            --enable-thread-safe \
+            --docdir=/usr/share/doc/mpfr-4.2.2
+
+make
+make html
+
+make check
+
+make install
+make install-html
+

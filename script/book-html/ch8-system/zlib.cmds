@@ -1,0 +1,12 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/zlib.html
+
+./configure --prefix=/usr
+
+make
+
+make check
+
+make install
+
+rm -fv /usr/lib/libz.a
+

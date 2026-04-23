@@ -1,0 +1,10 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/gperf.html
+
+./configure --prefix=/usr --docdir=/usr/share/doc/gperf-3.3
+
+make
+
+make check
+
+make install
+

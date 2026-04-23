@@ -1,0 +1,14 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/libelf.html
+
+./configure --prefix=/usr        \
+            --disable-debuginfod \
+            --enable-libdebuginfod=dummy
+
+make
+
+make check
+
+make -C libelf install
+install -vm644 config/libelf.pc /usr/lib/pkgconfig
+rm /usr/lib/libelf.a
+

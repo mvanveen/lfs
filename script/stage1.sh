@@ -5,6 +5,7 @@
 set -euxo pipefail
 
 export LFS=${LFS:-/mnt/lfs}
+# shellcheck source=/dev/null
 . ~/.bashrc
 
 cd "$LFS/sources"

@@ -1,0 +1,12 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/grep.html
+
+sed -i "s/echo/#echo/" src/egrep.sh
+
+./configure --prefix=/usr
+
+make
+
+make check
+
+make install
+

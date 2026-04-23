@@ -1,0 +1,6 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/man-pages.html
+
+rm -v man3/crypt*
+
+make -R GIT=false prefix=/usr install
+

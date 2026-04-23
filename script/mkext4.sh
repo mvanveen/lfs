@@ -8,7 +8,7 @@ SIZE_GB=${SIZE_GB:-30}
 LFS=${LFS:-/mnt/lfs}
 
 # Allocate a sparse image and create a single Linux partition.
-truncate -s ${SIZE_GB}G "$IMG"
+truncate -s "${SIZE_GB}G" "$IMG"
 parted -s "$IMG" mklabel msdos mkpart primary ext4 1MiB 100% set 1 boot on
 
 # Map partitions to /dev/mapper/loopNpM.
