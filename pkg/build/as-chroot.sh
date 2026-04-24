@@ -1,101 +1,140 @@
 #!/bin/bash
 # Inside chroot: build chapters 7 (final parts), 8, 9, 10.
-set -e
+set -euo pipefail
+
+STAMP_DIR=/sources/.done/build
+LOG_DIR=/sources/.log/build
+
+# ----- resumable runner ------------------------------------------------
+# Each package script is run in its own bash; on success we drop a stamp
+# in $STAMP_DIR.  Reruns skip stamped packages.  Set FORCE=pkg1,pkg2 to
+# re-run specific packages (or FORCE=all to wipe every stamp).
+mkdir -p "$STAMP_DIR" "$LOG_DIR"
+
+force_list=",${FORCE:-},"
+if [ "${FORCE:-}" = "all" ]; then
+    rm -f "$STAMP_DIR"/*
+    force_list=",,"
+fi
+
+run_pkg() {
+    local script="$1" name stamp log
+    name=$(basename "$script" .sh)
+    stamp="$STAMP_DIR/$name"
+    log="$LOG_DIR/$name.log"
+    if [[ "$force_list" == *",$name,"* ]]; then
+        rm -f "$stamp"
+    fi
+    if [ -e "$stamp" ]; then
+        printf '[skip]  %s\n' "$name"
+        return 0
+    fi
+    printf '[build] %s  (log: %s)\n' "$name" "$log"
+    local start=$SECONDS
+    if ! bash "$script" >"$log" 2>&1; then
+        printf '[FAIL]  %s  (see %s)\n' "$name" "$log" >&2
+        tail -n 40 "$log" >&2 || true
+        return 1
+    fi
+    printf '[ok]    %s  (%ds)\n' "$name" "$((SECONDS - start))"
+    touch "$stamp"
+}
+
 cd /sources/build
 
-sh /sources/build/creatingdirs.sh
-sh /sources/build/createfiles.sh
-sh /sources/build/gettext.sh
-sh /sources/build/bison.sh
-sh /sources/build/perl.sh
-sh /sources/build/Python.sh
-sh /sources/build/texinfo.sh
-sh /sources/build/util-linux.sh
-sh /sources/build/cleanup.sh
-sh /sources/build/man-pages.sh
-sh /sources/build/iana-etc.sh
-sh /sources/build/glibc.sh
-sh /sources/build/zlib.sh
-sh /sources/build/bzip2.sh
-sh /sources/build/xz.sh
-sh /sources/build/lz4.sh
-sh /sources/build/zstd.sh
-sh /sources/build/file.sh
-sh /sources/build/readline.sh
-sh /sources/build/m4.sh
-sh /sources/build/bc.sh
-sh /sources/build/flex.sh
-sh /sources/build/tcl.sh
-sh /sources/build/expect.sh
-sh /sources/build/dejagnu.sh
-sh /sources/build/binutils.sh
-sh /sources/build/gmp.sh
-sh /sources/build/mpfr.sh
-sh /sources/build/mpc.sh
-sh /sources/build/attr.sh
-sh /sources/build/acl.sh
-sh /sources/build/libcap.sh
-sh /sources/build/libxcrypt.sh
-sh /sources/build/shadow.sh
-sh /sources/build/gcc.sh
-sh /sources/build/ncurses.sh
-sh /sources/build/sed.sh
-sh /sources/build/psmisc.sh
-sh /sources/build/gettext-final.sh
-sh /sources/build/bison-final.sh
-sh /sources/build/grep.sh
-sh /sources/build/bash.sh
-sh /sources/build/libtool.sh
-sh /sources/build/gdbm.sh
-sh /sources/build/gperf.sh
-sh /sources/build/expat.sh
-sh /sources/build/inetutils.sh
-sh /sources/build/less.sh
-sh /sources/build/perl-final.sh
-sh /sources/build/xml-parser.sh
-sh /sources/build/intltool.sh
-sh /sources/build/autoconf.sh
-sh /sources/build/automake.sh
-sh /sources/build/openssl.sh
-sh /sources/build/kmod.sh
-sh /sources/build/libelf.sh
-sh /sources/build/libffi.sh
-sh /sources/build/Python-final.sh
-sh /sources/build/flit-core.sh
-sh /sources/build/wheel.sh
-sh /sources/build/setuptools.sh
-sh /sources/build/ninja.sh
-sh /sources/build/meson.sh
-sh /sources/build/coreutils.sh
-sh /sources/build/diffutils.sh
-sh /sources/build/gawk.sh
-sh /sources/build/findutils.sh
-sh /sources/build/groff.sh
-sh /sources/build/gzip.sh
-sh /sources/build/iproute2.sh
-sh /sources/build/kbd.sh
-sh /sources/build/libpipeline.sh
-sh /sources/build/make.sh
-sh /sources/build/patch.sh
-sh /sources/build/tar.sh
-sh /sources/build/texinfo-final.sh
-sh /sources/build/vim.sh
-sh /sources/build/markupsafe.sh
-sh /sources/build/jinja2.sh
-sh /sources/build/udev.sh
-sh /sources/build/man-db.sh
-sh /sources/build/procps-ng.sh
-sh /sources/build/util-linux-final.sh
-sh /sources/build/e2fsprogs.sh
-sh /sources/build/pkgconf.sh
-sh /sources/build/sysklogd.sh
-sh /sources/build/sysvinit.sh
-sh /sources/build/etcshells.sh
-sh /sources/build/inputrc.sh
-sh /sources/build/locale.sh
-sh /sources/build/network.sh
-sh /sources/build/symlinks.sh
-sh /sources/build/usage.sh
-sh /sources/build/fstab.sh
-sh /sources/build/kernel.sh
-sh /sources/build/grub.sh
+run_pkg /sources/build/creatingdirs.sh
+run_pkg /sources/build/createfiles.sh
+run_pkg /sources/build/gettext.sh
+run_pkg /sources/build/bison.sh
+run_pkg /sources/build/perl.sh
+run_pkg /sources/build/Python.sh
+run_pkg /sources/build/texinfo.sh
+run_pkg /sources/build/util-linux.sh
+run_pkg /sources/build/cleanup.sh
+run_pkg /sources/build/man-pages.sh
+run_pkg /sources/build/iana-etc.sh
+run_pkg /sources/build/glibc.sh
+run_pkg /sources/build/zlib.sh
+run_pkg /sources/build/bzip2.sh
+run_pkg /sources/build/xz.sh
+run_pkg /sources/build/lz4.sh
+run_pkg /sources/build/zstd.sh
+run_pkg /sources/build/file.sh
+run_pkg /sources/build/readline.sh
+run_pkg /sources/build/m4.sh
+run_pkg /sources/build/bc.sh
+run_pkg /sources/build/flex.sh
+run_pkg /sources/build/tcl.sh
+run_pkg /sources/build/expect.sh
+run_pkg /sources/build/dejagnu.sh
+run_pkg /sources/build/binutils.sh
+run_pkg /sources/build/gmp.sh
+run_pkg /sources/build/mpfr.sh
+run_pkg /sources/build/mpc.sh
+run_pkg /sources/build/attr.sh
+run_pkg /sources/build/acl.sh
+run_pkg /sources/build/libcap.sh
+run_pkg /sources/build/libxcrypt.sh
+run_pkg /sources/build/shadow.sh
+run_pkg /sources/build/gcc.sh
+run_pkg /sources/build/ncurses.sh
+run_pkg /sources/build/sed.sh
+run_pkg /sources/build/psmisc.sh
+run_pkg /sources/build/gettext-final.sh
+run_pkg /sources/build/bison-final.sh
+run_pkg /sources/build/grep.sh
+run_pkg /sources/build/bash.sh
+run_pkg /sources/build/libtool.sh
+run_pkg /sources/build/gdbm.sh
+run_pkg /sources/build/gperf.sh
+run_pkg /sources/build/expat.sh
+run_pkg /sources/build/inetutils.sh
+run_pkg /sources/build/less.sh
+run_pkg /sources/build/perl-final.sh
+run_pkg /sources/build/xml-parser.sh
+run_pkg /sources/build/intltool.sh
+run_pkg /sources/build/autoconf.sh
+run_pkg /sources/build/automake.sh
+run_pkg /sources/build/openssl.sh
+run_pkg /sources/build/kmod.sh
+run_pkg /sources/build/libelf.sh
+run_pkg /sources/build/libffi.sh
+run_pkg /sources/build/Python-final.sh
+run_pkg /sources/build/flit-core.sh
+run_pkg /sources/build/wheel.sh
+run_pkg /sources/build/setuptools.sh
+run_pkg /sources/build/ninja.sh
+run_pkg /sources/build/meson.sh
+run_pkg /sources/build/coreutils.sh
+run_pkg /sources/build/diffutils.sh
+run_pkg /sources/build/gawk.sh
+run_pkg /sources/build/findutils.sh
+run_pkg /sources/build/groff.sh
+run_pkg /sources/build/gzip.sh
+run_pkg /sources/build/iproute2.sh
+run_pkg /sources/build/kbd.sh
+run_pkg /sources/build/libpipeline.sh
+run_pkg /sources/build/make.sh
+run_pkg /sources/build/patch.sh
+run_pkg /sources/build/tar.sh
+run_pkg /sources/build/texinfo-final.sh
+run_pkg /sources/build/vim.sh
+run_pkg /sources/build/markupsafe.sh
+run_pkg /sources/build/jinja2.sh
+run_pkg /sources/build/udev.sh
+run_pkg /sources/build/man-db.sh
+run_pkg /sources/build/procps-ng.sh
+run_pkg /sources/build/util-linux-final.sh
+run_pkg /sources/build/e2fsprogs.sh
+run_pkg /sources/build/pkgconf.sh
+run_pkg /sources/build/sysklogd.sh
+run_pkg /sources/build/sysvinit.sh
+run_pkg /sources/build/etcshells.sh
+run_pkg /sources/build/inputrc.sh
+run_pkg /sources/build/locale.sh
+run_pkg /sources/build/network.sh
+run_pkg /sources/build/symlinks.sh
+run_pkg /sources/build/usage.sh
+run_pkg /sources/build/fstab.sh
+run_pkg /sources/build/kernel.sh
+run_pkg /sources/build/grub.sh

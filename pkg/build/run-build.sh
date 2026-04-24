@@ -1,7 +1,7 @@
 #!/bin/bash
 # Outside chroot: mount the virtual kernel filesystems then chroot into
 # $LFS and run as-chroot.sh.
-set -e
+set -euo pipefail
 
 LFS=${LFS:-/mnt/lfs}
 
@@ -24,6 +24,9 @@ else
   mountpoint -q $LFS/dev/shm || mount -vt tmpfs -o nosuid,nodev tmpfs $LFS/dev/shm
 fi
 
+# Forward FORCE (comma-separated pkg names to re-run) into the chroot.
+FORCE="${FORCE:-}"
+
 # Ch 7.4 - enter chroot and continue.
 chroot "$LFS" /usr/bin/env -i                 \
     HOME=/root                                \
@@ -32,4 +35,5 @@ chroot "$LFS" /usr/bin/env -i                 \
     PATH=/usr/bin:/usr/sbin                   \
     MAKEFLAGS="-j$(nproc)"                    \
     TESTSUITEFLAGS="-j$(nproc)"               \
-    /bin/bash --login -c "sh /sources/build/as-chroot.sh"
+    FORCE="$FORCE"                            \
+    /bin/bash --login -c "bash /sources/build/as-chroot.sh"

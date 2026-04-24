@@ -22,7 +22,8 @@ SCP      := scp -P $(CONTAINER_PORT) -o StrictHostKeyChecking=no
 
 .PHONY: all docker-build docker-run docker-kill clean undo-known-hosts \
         mkimg prep-host dl-sources upload-pkgs \
-        prep-pkgs build-pkgs ssh ssh-lfs lint
+        prep-pkgs build-pkgs ssh ssh-lfs lint \
+        status reset-stamps logs
 
 all: docker-kill clean docker-build docker-run mkimg prep-host \
      dl-sources upload-pkgs prep-pkgs build-pkgs
@@ -60,18 +61,37 @@ dl-sources:
 	$(SCP) packages.txt md5sums root@localhost:/mnt/lfs/sources/
 	$(SSH_ROOT) 'cd /mnt/lfs/sources && wget --continue --input-file=packages.txt'
 
-# Bulk-copy the prep + build trees in one go; no per-package scp/ssh spam.
+# Bulk-copy the prep + build trees.  rsync preserves /mnt/lfs/sources/.done
+# and .log from prior runs so re-uploads don't clobber resume state.
+RSYNC := rsync -a --delete -e 'ssh -p $(CONTAINER_PORT) -o StrictHostKeyChecking=no'
 upload-pkgs:
-	$(SSH_ROOT) 'rm -rf /mnt/lfs/sources/prep /mnt/lfs/sources/build'
-	$(SCP) -r pkg/prep pkg/build root@localhost:/mnt/lfs/sources/
-	$(SCP) script/stage1.sh       root@localhost:/mnt/lfs/sources/prep/stage1.sh
+	$(RSYNC) pkg/prep/  root@localhost:/mnt/lfs/sources/prep/
+	$(RSYNC) pkg/build/ root@localhost:/mnt/lfs/sources/build/
+	$(SCP) script/stage1.sh root@localhost:/mnt/lfs/sources/prep/stage1.sh
 	$(SSH_ROOT) 'chown -R lfs:lfs /mnt/lfs/sources && chmod +x /mnt/lfs/sources/prep/*.sh /mnt/lfs/sources/build/*.sh'
 
+# FORCE=pkg1,pkg2  re-run those packages even if stamped.
+# FORCE=all        wipe all stamps (full rebuild).
+FORCE ?=
 prep-pkgs:
-	$(SSH_LFS) 'bash /mnt/lfs/sources/prep/stage1.sh'
+	$(SSH_LFS) 'FORCE=$(FORCE) bash /mnt/lfs/sources/prep/stage1.sh'
 
 build-pkgs:
-	$(SSH_ROOT) 'sh /mnt/lfs/sources/build/run-build.sh'
+	$(SSH_ROOT) 'FORCE=$(FORCE) bash /mnt/lfs/sources/build/run-build.sh'
+
+# Inspect / manage resume state.
+status:
+	@$(SSH_ROOT) 'for phase in prep build; do \
+	   d=/mnt/lfs/sources/.done/$$phase; \
+	   echo "== $$phase =="; \
+	   [ -d $$d ] && ls $$d | sort || echo "(nothing built)"; \
+	 done'
+
+reset-stamps:
+	$(SSH_ROOT) 'rm -rf /mnt/lfs/sources/.done'
+
+logs:
+	@$(SSH_ROOT) 'ls -lrt /mnt/lfs/sources/.log/prep /mnt/lfs/sources/.log/build 2>/dev/null || true'
 
 # ----------------------------------------------------------------- utilities
 ssh:

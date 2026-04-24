@@ -9,4 +9,4 @@ set -e
 cd "$LFS/sources"
 md5sum -c md5sums || { echo "checksums failed" >&2; exit 1; }
 
-sh /mnt/lfs/sources/prep/run-prep.sh
+FORCE="${FORCE:-}" bash /mnt/lfs/sources/prep/run-prep.sh

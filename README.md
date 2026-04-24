@@ -49,6 +49,26 @@ Individual targets are re-runnable.  `ssh` / `ssh-lfs` give interactive
 sessions into the container as root / lfs, which is handy for poking at a
 failed build.
 
+### Resumable builds
+
+`run-prep.sh` and `as-chroot.sh` drop a stamp in `/mnt/lfs/sources/.done/`
+after each successful package, and a per-package log in
+`/mnt/lfs/sources/.log/`.  Re-running `make prep-pkgs` / `make build-pkgs`
+skips anything already stamped, so a failed build resumes where it
+stopped.
+
+| command                                   | effect                                     |
+|-------------------------------------------|--------------------------------------------|
+| `make status`                             | list stamped (completed) packages          |
+| `make logs`                               | list per-package logs by recency           |
+| `make build-pkgs FORCE=gcc,glibc`         | re-run those packages even if stamped      |
+| `make build-pkgs FORCE=all`               | wipe stamps, rebuild everything            |
+| `make reset-stamps`                       | same, without kicking off a build          |
+
+`upload-pkgs` uses `rsync` and leaves `.done/` and `.log/` in place, so
+edits to a package script followed by `make upload-pkgs build-pkgs
+FORCE=<pkg>` is the standard edit-rerun loop.
+
 ### Regenerating the package scripts
 
 The scripts under `pkg/` are generated directly from the book's

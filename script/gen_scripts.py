@@ -253,7 +253,7 @@ def main():
     (DST/'build'/'run-build.sh').write_text(r'''#!/bin/bash
 # Outside chroot: mount the virtual kernel filesystems then chroot into
 # $LFS and run as-chroot.sh.
-set -e
+set -euo pipefail
 
 LFS=${LFS:-/mnt/lfs}
 
@@ -276,6 +276,9 @@ else
   mountpoint -q $LFS/dev/shm || mount -vt tmpfs -o nosuid,nodev tmpfs $LFS/dev/shm
 fi
 
+# Forward FORCE (comma-separated pkg names to re-run) into the chroot.
+FORCE="${FORCE:-}"
+
 # Ch 7.4 - enter chroot and continue.
 chroot "$LFS" /usr/bin/env -i                 \
     HOME=/root                                \
@@ -284,29 +287,75 @@ chroot "$LFS" /usr/bin/env -i                 \
     PATH=/usr/bin:/usr/sbin                   \
     MAKEFLAGS="-j$(nproc)"                    \
     TESTSUITEFLAGS="-j$(nproc)"               \
-    /bin/bash --login -c "sh /sources/build/as-chroot.sh"
+    FORCE="$FORCE"                            \
+    /bin/bash --login -c "bash /sources/build/as-chroot.sh"
 ''')
+
+    # Shared runner: per-package stamp + logfile + resume on rerun.
+    runner = r'''
+# ----- resumable runner ------------------------------------------------
+# Each package script is run in its own bash; on success we drop a stamp
+# in $STAMP_DIR.  Reruns skip stamped packages.  Set FORCE=pkg1,pkg2 to
+# re-run specific packages (or FORCE=all to wipe every stamp).
+mkdir -p "$STAMP_DIR" "$LOG_DIR"
+
+force_list=",${FORCE:-},"
+if [ "${FORCE:-}" = "all" ]; then
+    rm -f "$STAMP_DIR"/*
+    force_list=",,"
+fi
+
+run_pkg() {
+    local script="$1" name stamp log
+    name=$(basename "$script" .sh)
+    stamp="$STAMP_DIR/$name"
+    log="$LOG_DIR/$name.log"
+    if [[ "$force_list" == *",$name,"* ]]; then
+        rm -f "$stamp"
+    fi
+    if [ -e "$stamp" ]; then
+        printf '[skip]  %s\n' "$name"
+        return 0
+    fi
+    printf '[build] %s  (log: %s)\n' "$name" "$log"
+    local start=$SECONDS
+    if ! bash "$script" >"$log" 2>&1; then
+        printf '[FAIL]  %s  (see %s)\n' "$name" "$log" >&2
+        tail -n 40 "$log" >&2 || true
+        return 1
+    fi
+    printf '[ok]    %s  (%ds)\n' "$name" "$((SECONDS - start))"
+    touch "$stamp"
+}
+'''.lstrip('\n')
 
     # as-chroot.sh: inside chroot, run every package script in order.
     lines = ['#!/bin/bash',
              '# Inside chroot: build chapters 7 (final parts), 8, 9, 10.',
-             'set -e',
+             'set -euo pipefail',
+             '',
+             'STAMP_DIR=/sources/.done/build',
+             'LOG_DIR=/sources/.log/build',
+             '',
+             runner,
              'cd /sources/build',
              '']
     for name in build_files:
-        lines.append(f'sh /sources/build/{name}')
+        lines.append(f'run_pkg /sources/build/{name}')
     (DST/'build'/'as-chroot.sh').write_text('\n'.join(lines) + '\n')
 
-    # Emit a driver for pkg/prep/ too (runs each prep script in order
-    # under /home/lfs, using the lfs user's environment).  The prep
-    # scripts cd around freely, so each must be sourced in its own
-    # subshell to avoid cwd leakage across packages.
+    # Driver for pkg/prep/ (runs as the lfs user, outside chroot).
     lines = ['#!/bin/bash',
              '# Drive pkg/prep/*.sh in book order (runs as the lfs user).',
-             'set -e',
+             'set -euo pipefail',
+             '',
+             'STAMP_DIR=/mnt/lfs/sources/.done/prep',
+             'LOG_DIR=/mnt/lfs/sources/.log/prep',
+             '',
+             runner,
              '']
     for name in prep_files:
-        lines.append(f'(source /mnt/lfs/sources/prep/{name})')
+        lines.append(f'run_pkg /mnt/lfs/sources/prep/{name}')
     (DST/'prep'/'run-prep.sh').write_text('\n'.join(lines) + '\n')
 
     print(f'wrote {len(prep_files)} prep scripts, {len(build_files)} build scripts')
