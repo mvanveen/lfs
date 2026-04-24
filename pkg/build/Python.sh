@@ -1,5 +1,6 @@
 # Python  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter07/Python.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf Python-3.13.7
 tar xf Python-3.13.7.tar.xz

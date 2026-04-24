@@ -1,5 +1,6 @@
 # openssl  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/openssl.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf openssl-3.5.2
 tar xf openssl-3.5.2.tar.gz

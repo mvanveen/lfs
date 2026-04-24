@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
       bison gawk texinfo python3 python3-distutils-extra \
       m4 gperf gettext autopoint flex file xz-utils bzip2 \
       patch kpartx parted dosfstools sudo less vim-tiny \
-      libncurses-dev pkg-config && \
+      libncurses-dev pkg-config rsync && \
     rm -rf /var/lib/apt/lists/*
 
 # Ensure /bin/sh is bash (required by LFS).

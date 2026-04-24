@@ -1,5 +1,6 @@
 # vim  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/vim.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf vim-9.1.1629
 tar xf vim-9.1.1629.tar.gz

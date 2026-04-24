@@ -1,5 +1,6 @@
 # fstab  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter10/fstab.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cat > /etc/fstab << "EOF"
 # Begin /etc/fstab
 

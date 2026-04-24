@@ -1,5 +1,6 @@
 # wheel  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/wheel.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf wheel-0.46.1
 tar xf wheel-0.46.1.tar.gz

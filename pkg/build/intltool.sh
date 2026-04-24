@@ -1,5 +1,6 @@
 # intltool  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/intltool.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf intltool-0.51.0
 tar xf intltool-0.51.0.tar.gz

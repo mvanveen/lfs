@@ -1,5 +1,6 @@
 # libcap  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/libcap.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf libcap-2.76
 tar xf libcap-2.76.tar.xz

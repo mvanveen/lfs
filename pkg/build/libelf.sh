@@ -1,5 +1,6 @@
 # libelf  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/libelf.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf elfutils-0.193
 tar xf elfutils-0.193.tar.bz2

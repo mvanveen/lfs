@@ -210,6 +210,7 @@ def render(chapter, slug):
     header = (
         f'# {slug}  --  {url}\n'
         f'# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061\n'
+        f'set -e\n'
     )
 
     info = SLUG_MAP.get(slug)

@@ -59,7 +59,7 @@ prep-host:
 
 dl-sources:
 	$(SCP) packages.txt md5sums root@localhost:/mnt/lfs/sources/
-	$(SSH_ROOT) 'cd /mnt/lfs/sources && wget --continue --input-file=packages.txt'
+	$(SSH_ROOT) 'cd /mnt/lfs/sources && wget --continue --timeout=30 --tries=3 --input-file=packages.txt && md5sum -c md5sums'
 
 # Bulk-copy the prep + build trees.  rsync preserves /mnt/lfs/sources/.done
 # and .log from prior runs so re-uploads don't clobber resume state.

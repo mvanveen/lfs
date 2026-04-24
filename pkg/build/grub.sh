@@ -1,5 +1,6 @@
 # grub  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter10/grub.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf grub-2.12
 tar xf grub-2.12.tar.xz

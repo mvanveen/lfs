@@ -1,5 +1,6 @@
 # m4  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/m4.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf m4-1.4.20
 tar xf m4-1.4.20.tar.xz

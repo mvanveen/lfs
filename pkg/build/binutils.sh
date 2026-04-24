@@ -1,5 +1,6 @@
 # binutils  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/binutils.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf binutils-2.45
 tar xf binutils-2.45.tar.xz

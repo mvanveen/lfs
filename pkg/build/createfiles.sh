@@ -1,5 +1,6 @@
 # createfiles  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter07/createfiles.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 ln -sv /proc/self/mounts /etc/mtab
 
 cat > /etc/hosts << EOF

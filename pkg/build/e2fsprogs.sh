@@ -1,5 +1,6 @@
 # e2fsprogs  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/e2fsprogs.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf e2fsprogs-1.47.3
 tar xf e2fsprogs-1.47.3.tar.gz

@@ -16,6 +16,14 @@ ln -sfv bash /bin/sh
 mkdir -pv "$LFS/sources" "$LFS/tools"
 chmod -v a+wt "$LFS/sources"
 
+# Ch 4.2 - limited directory layout so linux-headers/glibc land in
+# $LFS/usr/include not $LFS/usr/.  Without this 'cp -rv usr/include $LFS/usr'
+# drops the header subdirs straight into $LFS/usr/.
+mkdir -pv "$LFS"/{etc,var} "$LFS"/usr/{bin,lib,sbin}
+case $(uname -m) in
+  x86_64) mkdir -pv "$LFS"/lib64 ;;
+esac
+
 # Convenience symlink so /tools inside chroot points to $LFS/tools.
 ln -svf "$LFS/tools" /
 
@@ -26,7 +34,11 @@ if ! id lfs >/dev/null 2>&1; then
   # Passwordless (SSH-only).
   sed -i -e 's/^lfs:!:/lfs::/' /etc/shadow
 fi
-chown -v lfs "$LFS" "$LFS/sources" "$LFS/tools"
+chown -Rv lfs:lfs "$LFS"/{usr,lib,var,etc,bin,sbin,tools,sources} 2>/dev/null || true
+case $(uname -m) in
+  x86_64) chown -Rv lfs:lfs "$LFS"/lib64 2>/dev/null || true ;;
+esac
+chown -v lfs "$LFS"
 
 # Give the lfs user our SSH keys.
 install -d -m 700 -o lfs -g lfs /home/lfs/.ssh

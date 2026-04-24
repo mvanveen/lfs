@@ -1,5 +1,6 @@
 # inputrc  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter09/inputrc.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cat > /etc/inputrc << "EOF"
 # Begin /etc/inputrc
 # Modified by Chris Lynn <roryo@roryo.dynup.net>

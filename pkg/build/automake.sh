@@ -1,5 +1,6 @@
 # automake  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/automake.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf automake-1.18.1
 tar xf automake-1.18.1.tar.xz

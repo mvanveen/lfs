@@ -1,5 +1,6 @@
 # kbd  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/kbd.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf kbd-2.8.0
 tar xf kbd-2.8.0.tar.xz

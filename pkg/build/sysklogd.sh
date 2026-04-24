@@ -1,5 +1,6 @@
 # sysklogd  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/sysklogd.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
 rm -rf sysklogd-2.7.2
 tar xf sysklogd-2.7.2.tar.gz
