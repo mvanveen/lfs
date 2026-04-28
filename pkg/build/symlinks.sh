@@ -7,12 +7,11 @@ sed -e '/^AlternativeNamesPolicy/s/=.*$/=/'  \
        /usr/lib/udev/network/99-default.link \
      > /etc/udev/network/99-default.link
 
-udevadm test /sys/block/hdd
+udevadm test /sys/block/hdd || :  # advisory; fails when the device is absent
 
 sed -e 's/"write_cd_rules"/"write_cd_rules mode"/' \
-    -i /etc/udev/rules.d/83-cdrom-symlinks.rules
-
-udevadm info -a -p /sys/class/video4linux/video0
+    -i /etc/udev/rules.d/83-cdrom-symlinks.rules || :  # advisory; rules file may not exist
+udevadm info -a -p /sys/class/video4linux/video0 || :  # advisory; fails when the device is absent
 
 cat > /etc/udev/rules.d/83-duplicate_devs.rules << "EOF"
 

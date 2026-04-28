@@ -6,7 +6,7 @@ rm -rf groff-1.23.0
 tar xf groff-1.23.0.tar.gz
 cd groff-1.23.0
 
-# TEMPLATE (edit before running): PAGE=<paper_size> ./configure --prefix=/usr
+PAGE=A4 ./configure --prefix=/usr
 
 make
 

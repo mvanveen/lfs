@@ -67,6 +67,7 @@ run_pkg /sources/build/flex.sh
 run_pkg /sources/build/tcl.sh
 run_pkg /sources/build/expect.sh
 run_pkg /sources/build/dejagnu.sh
+run_pkg /sources/build/pkgconf.sh
 run_pkg /sources/build/binutils.sh
 run_pkg /sources/build/gmp.sh
 run_pkg /sources/build/mpfr.sh
@@ -96,20 +97,22 @@ run_pkg /sources/build/intltool.sh
 run_pkg /sources/build/autoconf.sh
 run_pkg /sources/build/automake.sh
 run_pkg /sources/build/openssl.sh
-run_pkg /sources/build/kmod.sh
 run_pkg /sources/build/libelf.sh
 run_pkg /sources/build/libffi.sh
 run_pkg /sources/build/Python-final.sh
 run_pkg /sources/build/flit-core.sh
+run_pkg /sources/build/packaging.sh
 run_pkg /sources/build/wheel.sh
 run_pkg /sources/build/setuptools.sh
 run_pkg /sources/build/ninja.sh
 run_pkg /sources/build/meson.sh
+run_pkg /sources/build/kmod.sh
 run_pkg /sources/build/coreutils.sh
 run_pkg /sources/build/diffutils.sh
 run_pkg /sources/build/gawk.sh
 run_pkg /sources/build/findutils.sh
 run_pkg /sources/build/groff.sh
+run_pkg /sources/build/grub.sh
 run_pkg /sources/build/gzip.sh
 run_pkg /sources/build/iproute2.sh
 run_pkg /sources/build/kbd.sh
@@ -126,7 +129,6 @@ run_pkg /sources/build/man-db.sh
 run_pkg /sources/build/procps-ng.sh
 run_pkg /sources/build/util-linux-final.sh
 run_pkg /sources/build/e2fsprogs.sh
-run_pkg /sources/build/pkgconf.sh
 run_pkg /sources/build/sysklogd.sh
 run_pkg /sources/build/sysvinit.sh
 run_pkg /sources/build/etcshells.sh
@@ -137,4 +139,4 @@ run_pkg /sources/build/symlinks.sh
 run_pkg /sources/build/usage.sh
 run_pkg /sources/build/fstab.sh
 run_pkg /sources/build/kernel.sh
-run_pkg /sources/build/grub.sh
+run_pkg /sources/build/grub-final.sh

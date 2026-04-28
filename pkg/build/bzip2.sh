@@ -20,7 +20,7 @@ make
 make PREFIX=/usr install
 
 cp -av libbz2.so.* /usr/lib
-ln -sv libbz2.so.1.0.8 /usr/lib/libbz2.so
+ln -sfv libbz2.so.1.0.8 /usr/lib/libbz2.so
 
 cp -v bzip2-shared /usr/bin/bzip2
 for i in /usr/bin/{bzcat,bunzip2}; do

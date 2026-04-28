@@ -15,7 +15,7 @@ make
 
 make DESTDIR=$LFS install
 
-ln -sv bash $LFS/bin/sh
+ln -sfv bash $LFS/bin/sh
 
 cd /mnt/lfs/sources
 rm -rf bash-5.3

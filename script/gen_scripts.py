@@ -62,6 +62,10 @@ PREP_ORDER = [
     ('ch6-crosstools', 'gcc-pass2'),
 ]
 
+# Canonical book order (scraped from
+# https://www.linuxfromscratch.org/lfs/view/stable/chapter{07,08,09,10}/
+# index pages).  Edit by re-scraping when retargeting future LFS releases
+# rather than hand-editing.
 BUILD_ORDER = [
     # ch 7 - initial filesystem inside the chroot, then additional temp tools
     ('ch7-chroot-tools', 'creatingdirs'),
@@ -73,7 +77,7 @@ BUILD_ORDER = [
     ('ch7-chroot-tools', 'texinfo'),
     ('ch7-chroot-tools', 'util-linux'),
     ('ch7-chroot-tools', 'cleanup'),
-    # ch 8 - final system
+    # ch 8 - final system (canonical book order)
     ('ch8-system', 'man-pages'),
     ('ch8-system', 'iana-etc'),
     ('ch8-system', 'glibc'),
@@ -90,6 +94,7 @@ BUILD_ORDER = [
     ('ch8-system', 'tcl'),
     ('ch8-system', 'expect'),
     ('ch8-system', 'dejagnu'),
+    ('ch8-system', 'pkgconf'),
     ('ch8-system', 'binutils'),
     ('ch8-system', 'gmp'),
     ('ch8-system', 'mpfr'),
@@ -119,20 +124,23 @@ BUILD_ORDER = [
     ('ch8-system', 'autoconf'),
     ('ch8-system', 'automake'),
     ('ch8-system', 'openssl'),
-    ('ch8-system', 'kmod'),
     ('ch8-system', 'libelf'),
     ('ch8-system', 'libffi'),
     ('ch8-system', 'Python'),
     ('ch8-system', 'flit-core'),
+    ('ch8-system', 'packaging'),
     ('ch8-system', 'wheel'),
     ('ch8-system', 'setuptools'),
     ('ch8-system', 'ninja'),
     ('ch8-system', 'meson'),
+    ('ch8-system', 'kmod'),
     ('ch8-system', 'coreutils'),
     ('ch8-system', 'diffutils'),
     ('ch8-system', 'gawk'),
     ('ch8-system', 'findutils'),
     ('ch8-system', 'groff'),
+    # ch8 grub builds the binaries; ch10 grub does grub-install + grub.cfg.
+    ('ch8-system', 'grub'),
     ('ch8-system', 'gzip'),
     ('ch8-system', 'iproute2'),
     ('ch8-system', 'kbd'),
@@ -149,7 +157,6 @@ BUILD_ORDER = [
     ('ch8-system', 'procps-ng'),
     ('ch8-system', 'util-linux'),
     ('ch8-system', 'e2fsprogs'),
-    ('ch8-system', 'pkgconf'),
     ('ch8-system', 'sysklogd'),
     ('ch8-system', 'sysvinit'),
     # ch 9 - system configuration
@@ -177,6 +184,28 @@ PATCHES = [
     # Passwd prompts.
     (re.compile(r'^\s*passwd\s+(root|tester)\s*$', re.MULTILINE),
      r'# book: passwd \1  (set out-of-band for unattended build)'),
+    # bash's test driver runs `make tests` inside an expect heredoc:
+    #   LC_ALL=C.UTF-8 su -s /usr/bin/expect tester << "EOF"
+    #   set timeout -1
+    #   spawn make tests
+    #   ...
+    #   EOF
+    # Gate the whole heredoc on RUN_TESTS=1 (Docker containers often
+    # don't have enough ptys for `make tests` to run anyway).
+    (re.compile(
+        r'^(?P<indent>[ \t]*)'
+        r'(?P<block>'
+        r'LC_ALL=\S+\s+su\s+-s\s+/usr/bin/expect\s+tester\s*<<\s*"EOF"\n'
+        r'(?:.*\n)*?'
+        r'EOF)\n',
+        re.MULTILINE),
+     lambda m: (
+        f"{m.group('indent')}if [ \"${{RUN_TESTS:-0}}\" = 1 ]; then\n"
+        f"{m.group(0)[:-1]}\n"  # drop trailing \n then re-add
+        f"{m.group('indent')}else\n"
+        f"{m.group('indent')}  echo 'skip tests (RUN_TESTS=0): expect heredoc'\n"
+        f"{m.group('indent')}fi\n"
+     )),
     # ncurses builds .so.X.Y where X.Y is the runtime version of the
     # tarball (book hardcodes 6.5 from its dated snapshot).  We may have
     # substituted a newer ncurses (e.g. 6.6) which produces .so.6.6 -
@@ -188,6 +217,51 @@ PATCHES = [
     # Same idea for the doc dir reference (was ncurses-6.5-20250809).
     (re.compile(r'/usr/share/doc/ncurses-6\.\d+(?:-\d+)?'),
      r'/usr/share/doc/ncurses'),
+    # The book assumes /boot is a separate partition; our single-partition
+    # loopback layout has it as a plain directory.  Drop `mount /boot` and
+    # change `cp -iv` (-i prompts for overwrite) to `cp -fv` so kernel +
+    # grub installs are non-interactive.
+    (re.compile(r'^\s*mount\s+/boot\s*$', re.MULTILINE),
+     'mkdir -pv /boot   # book mounts a separate /boot here'),
+    (re.compile(r'\bcp\s+-iv\b'), 'cp -fv'),
+    # ch10 grub-final's `grub-mkrescue --output=...` needs xorriso/mtools
+    # the LFS image doesn't have; same with `xorriso -as cdrecord` and
+    # `grub-install /dev/sda` which targets a host disk we don't own.
+    # These are bootloader-install steps the user runs manually post-build.
+    (re.compile(r'^\s*grub-mkrescue\s[^\n]*$', re.MULTILINE),
+     '# book: grub-mkrescue ...  (run manually post-build)'),
+    (re.compile(r'^\s*xorriso\s+-as\s+cdrecord[^\n]*$', re.MULTILINE),
+     '# book: xorriso -as cdrecord ...  (run manually post-build)'),
+    (re.compile(r'^\s*grub-install\s+/dev/sda\s*$', re.MULTILINE),
+     '# book: grub-install /dev/sda  (run manually post-build with real device)\n'
+     'mkdir -pv /boot/grub'),
+    # ch9 symlinks runs udevadm probes (`udevadm test /sys/block/hdd`,
+    # `udevadm info -a -p /sys/class/video4linux/video0`) and seds the
+    # 83-cdrom-symlinks.rules file for the user to eyeball; they fail
+    # when the devices / files don't exist (e.g. inside a container).
+    (re.compile(r'^(\s*)(udevadm\s+(?:test|info)\s[^\n]+)$', re.MULTILINE),
+     r'\1\2 || :  # advisory; fails when the device is absent'),
+    # The book's symlinks.html sed targets /etc/udev/rules.d/83-cdrom-symlinks.rules
+    # which only exists if a prior install populated it.  Match the
+    # multi-line form (sed ... \\\n  -i path) and append || :.
+    (re.compile(
+        r'^(\s*sed\s[^\n]*\\\n[^\n]*-i\s+/etc/udev/rules\.d/83-cdrom-symlinks\.rules)\s*$',
+        re.MULTILINE),
+     r'\1 || :  # advisory; rules file may not exist'),
+    # util-linux's `bash tests/run.sh ...` requires the test programs to
+    # have been compiled; gate on RUN_TESTS so it's optional.
+    (re.compile(r'^(?P<indent>[ \t]*)(?P<cmd>bash\s+tests/run\.sh[^\n]*)$', re.MULTILINE),
+     r'\g<indent>if [ "${RUN_TESTS:-0}" = 1 ]; then \g<cmd>; else echo "skip tests/run.sh (RUN_TESTS=0)"; fi'),
+    # `ln -sv` -> `ln -sfv` so a partial / re-run install doesn't fail on
+    # symlinks that already exist from a previous attempt.  Idempotent.
+    (re.compile(r'\bln\s+-sv\b'), 'ln -sfv'),
+    # vim's interactive `vim -c ':options'` smoke test -- redirect stdin
+    # so it returns immediately, and ignore the inevitable error.
+    (re.compile(r"^\s*vim\s+-c\s+':options'\s*$", re.MULTILINE),
+     '# book: vim -c \':options\'  (interactive; skipped)'),
+    # groff's `PAGE=<paper_size> ./configure ...` -- pick A4 unconditionally.
+    (re.compile(r'^(\s*)PAGE=<paper_size>(\s+\./configure[^\n]*)$', re.MULTILINE),
+     r'\1PAGE=A4\2'),
     # gmp's `ABI=32 ./configure ...` is x86-only documentation, not a real
     # command (`...` is literal); kill it so x86_64 builds don't choke.
     (re.compile(r'^\s*ABI=32\s+\./configure\s+\.\.\.\s*$', re.MULTILINE),
@@ -299,8 +373,10 @@ _CHECK_RE = re.compile(
     r'(?:su\s+\S+\s+-c\s+"[^"]*\bmake\b[^"]*\b(?:check|test)\b[^"]*"'
     r'(?:[ \t]*\\\n[^\n]*)*)'
     r'|'
-    # Bare `make [flags] check`.
-    r'(?:make(?:\s+-[^\s]+)*\s+(?:check|test)\b[^\n]*)'
+    # Bare `make [flags] check`, optionally with leading env-var assignments
+    # like `HARNESS_JOBS=$(nproc) make test` (openssl) or
+    # `LC_ALL=C ... make check` (perl-final).
+    r'(?:(?:[A-Za-z_][A-Za-z0-9_]*=\S+\s+)*make(?:\s+-[^\s]+)*\s+(?:check|test)\b[^\n]*)'
     r')\s*$',
     re.MULTILINE,
 )

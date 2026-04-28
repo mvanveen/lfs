@@ -49,7 +49,7 @@ make
 
 make DESTDIR=$LFS install
 
-ln -sv gcc $LFS/usr/bin/cc
+ln -sfv gcc $LFS/usr/bin/cc
 
 cd /mnt/lfs/sources
 rm -rf gcc-15.2.0

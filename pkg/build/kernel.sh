@@ -11,14 +11,12 @@ make defconfig   # book uses `make menuconfig`; use defconfig for unattended bui
 make
 
 make modules_install
+mkdir -pv /boot   # book mounts a separate /boot here
+cp -fv arch/x86/boot/bzImage /boot/vmlinuz-6.16.1-lfs-12.4
 
-mount /boot
+cp -fv System.map /boot/System.map-6.16.1
 
-cp -iv arch/x86/boot/bzImage /boot/vmlinuz-6.16.1-lfs-12.4
-
-cp -iv System.map /boot/System.map-6.16.1
-
-cp -iv .config /boot/config-6.16.1
+cp -fv .config /boot/config-6.16.1
 
 cp -r Documentation -T /usr/share/doc/linux-6.16.1
 

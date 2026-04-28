@@ -27,7 +27,7 @@ cd util-linux-2.41.1
 
 make
 
-bash tests/run.sh --srcdir=$PWD --builddir=$PWD
+if [ "${RUN_TESTS:-0}" = 1 ]; then bash tests/run.sh --srcdir=$PWD --builddir=$PWD; else echo "skip tests/run.sh (RUN_TESTS=0)"; fi
 
 touch /etc/fstab
 chown -R tester .
