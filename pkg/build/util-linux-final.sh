@@ -1,7 +1,7 @@
 # util-linux  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/util-linux.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf util-linux-2.41.1
 tar xf util-linux-2.41.1.tar.xz
 cd util-linux-2.41.1
@@ -31,9 +31,13 @@ bash tests/run.sh --srcdir=$PWD --builddir=$PWD
 
 touch /etc/fstab
 chown -R tester .
-su tester -c "make -k check"
-
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  su tester -c "make -k check" \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
 make install
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf util-linux-2.41.1

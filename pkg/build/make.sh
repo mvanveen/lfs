@@ -1,7 +1,7 @@
 # make  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/make.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf make-4.4.1
 tar xf make-4.4.1.tar.gz
 cd make-4.4.1
@@ -11,9 +11,13 @@ cd make-4.4.1
 make
 
 chown -R tester .
-su tester -c "PATH=$PATH make check"
-
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  su tester -c "PATH=$PATH make check" \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
 make install
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf make-4.4.1

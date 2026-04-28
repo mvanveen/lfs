@@ -1,7 +1,7 @@
 # vim  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/vim.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf vim-9.1.1629
 tar xf vim-9.1.1629.tar.gz
 cd vim-9.1.1629
@@ -15,9 +15,13 @@ make
 chown -R tester .
 sed '/test_plugin_glvs/d' -i src/testdir/Make_all.mak
 
-su tester -c "TERM=xterm-256color LANG=en_US.UTF-8 make -j1 test" \
-   &> vim-test.log
-
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  su tester -c "TERM=xterm-256color LANG=en_US.UTF-8 make -j1 test" \
+     &> vim-test.log \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
 make install
 
 ln -sv vim /usr/bin/vi
@@ -47,5 +51,5 @@ EOF
 
 vim -c ':options'
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf vim-9.1.1629

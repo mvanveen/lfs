@@ -1,7 +1,7 @@
 # perl  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter07/perl.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf perl-5.42.0
 tar xf perl-5.42.0.tar.xz
 cd perl-5.42.0
@@ -21,5 +21,5 @@ make
 
 make install
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf perl-5.42.0

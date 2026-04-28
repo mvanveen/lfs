@@ -17,9 +17,14 @@ mkdir -pv "$LFS/sources" "$LFS/tools"
 chmod -v a+wt "$LFS/sources"
 
 # Ch 4.2 - limited directory layout so linux-headers/glibc land in
-# $LFS/usr/include not $LFS/usr/.  Without this 'cp -rv usr/include $LFS/usr'
-# drops the header subdirs straight into $LFS/usr/.
+# $LFS/usr/include not $LFS/usr/, and the /bin /lib /sbin symlinks
+# (so the dynamic loader at /lib64/ld-linux... can find /lib/... after
+# chroot).  Without these, 'chroot $LFS /usr/bin/env' fails before
+# creatingdirs.sh can run.
 mkdir -pv "$LFS"/{etc,var} "$LFS"/usr/{bin,lib,sbin}
+for i in bin lib sbin; do
+  ln -sfv "usr/$i" "$LFS/$i"
+done
 case $(uname -m) in
   x86_64) mkdir -pv "$LFS"/lib64 ;;
 esac

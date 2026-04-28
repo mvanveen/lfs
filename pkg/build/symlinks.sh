@@ -1,7 +1,7 @@
 # symlinks  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter09/symlinks.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cat /etc/udev/rules.d/70-persistent-net.rules
+cat /etc/udev/rules.d/70-persistent-net.rules || :
 
 sed -e '/^AlternativeNamesPolicy/s/=.*$/=/'  \
        /usr/lib/udev/network/99-default.link \

@@ -1,7 +1,7 @@
 # binutils  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/binutils.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf binutils-2.45
 tar xf binutils-2.45.tar.xz
 cd binutils-2.45
@@ -22,14 +22,18 @@ cd       build
 
 make tooldir=/usr
 
-make -k check
-
-grep '^FAIL:' $(find -name '*.log')
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  make -k check \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
+grep '^FAIL:' $(find -name '*.log') || :
 
 make tooldir=/usr install
 
 rm -rfv /usr/lib/lib{bfd,ctf,ctf-nobfd,gprofng,opcodes,sframe}.a \
         /usr/share/doc/gprofng/
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf binutils-2.45

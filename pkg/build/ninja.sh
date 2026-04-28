@@ -1,7 +1,7 @@
 # ninja  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/ninja.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf ninja-1.13.1
 tar xf ninja-1.13.1.tar.gz
 cd ninja-1.13.1
@@ -19,5 +19,5 @@ install -vm755 ninja /usr/bin/
 install -vDm644 misc/bash-completion /usr/share/bash-completion/completions/ninja
 install -vDm644 misc/zsh-completion  /usr/share/zsh/site-functions/_ninja
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf ninja-1.13.1

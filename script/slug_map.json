@@ -67,6 +67,10 @@
     "dir": "expat-2.7.1",
     "tarball": "expat-2.7.1.tar.xz"
   },
+  "expect": {
+    "dir": "expect5.45.4",
+    "tarball": "expect5.45.4.tar.gz"
+  },
   "file": {
     "dir": "file-5.46",
     "tarball": "file-5.46.tar.gz"
@@ -191,6 +195,10 @@
     "dir": "libffi-3.5.2",
     "tarball": "libffi-3.5.2.tar.gz"
   },
+  "libpipeline": {
+    "dir": "libpipeline-1.5.8",
+    "tarball": "libpipeline-1.5.8.tar.gz"
+  },
   "libtool": {
     "dir": "libtool-2.5.4",
     "tarball": "libtool-2.5.4.tar.xz"
@@ -240,8 +248,8 @@
     "tarball": "mpfr-4.2.2.tar.xz"
   },
   "ncurses": {
-    "dir": "ncurses-6.5-20250809",
-    "tarball": "ncurses-6.5-20250809.tgz"
+    "dir": "ncurses-6.6",
+    "tarball": "ncurses-6.6.tar.gz"
   },
   "ninja": {
     "dir": "ninja-1.13.1",

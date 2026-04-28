@@ -16,14 +16,18 @@
 SHELL          := /bin/bash
 IMAGE          := linuxfromscratch
 CONTAINER_PORT := 2222
-SSH_ROOT := ssh -p $(CONTAINER_PORT) -o StrictHostKeyChecking=no root@localhost
-SSH_LFS  := ssh -p $(CONTAINER_PORT) -o StrictHostKeyChecking=no lfs@localhost
-SCP      := scp -P $(CONTAINER_PORT) -o StrictHostKeyChecking=no
+SSH_OPTS := -p $(CONTAINER_PORT) -o StrictHostKeyChecking=no
+SSH_ROOT := ssh $(SSH_OPTS) root@localhost
+SSH_LFS  := ssh $(SSH_OPTS) lfs@localhost
+# One tool for host->container copies: rsync over ssh.  Works for single
+# files or whole trees; -a preserves perms/times; --delete (only where
+# used below) keeps the destination in sync with the source.
+RSYNC    := rsync -a -e 'ssh $(SSH_OPTS)'
 
 .PHONY: all docker-build docker-run docker-kill clean undo-known-hosts \
         mkimg prep-host dl-sources upload-pkgs \
         prep-pkgs build-pkgs ssh ssh-lfs lint \
-        status reset-stamps logs
+        status reset-stamps logs trim
 
 all: docker-kill clean docker-build docker-run mkimg prep-host \
      dl-sources upload-pkgs prep-pkgs build-pkgs
@@ -50,34 +54,36 @@ clean:
 
 # ----------------------------------------------------------------- build steps
 mkimg:
-	$(SCP) script/mkext4.sh root@localhost:/root/
+	$(RSYNC) script/mkext4.sh root@localhost:/root/
 	$(SSH_ROOT) 'bash /root/mkext4.sh'
 
 prep-host:
-	$(SCP) script/stage0.sh root@localhost:/root/
+	$(RSYNC) script/stage0.sh root@localhost:/root/
 	$(SSH_ROOT) 'bash /root/stage0.sh'
 
 dl-sources:
-	$(SCP) packages.txt md5sums root@localhost:/mnt/lfs/sources/
+	$(RSYNC) packages.txt md5sums root@localhost:/mnt/lfs/sources/
 	$(SSH_ROOT) 'cd /mnt/lfs/sources && wget --continue --timeout=30 --tries=3 --input-file=packages.txt && md5sum -c md5sums'
 
-# Bulk-copy the prep + build trees.  rsync preserves /mnt/lfs/sources/.done
-# and .log from prior runs so re-uploads don't clobber resume state.
-RSYNC := rsync -a --delete -e 'ssh -p $(CONTAINER_PORT) -o StrictHostKeyChecking=no'
+# --delete on the pkg trees so renames / removals propagate; the sibling
+# .done/ and .log/ dirs under /mnt/lfs/sources/ are unaffected because
+# we sync into prep/ and build/ subdirs, not the parent.
 upload-pkgs:
-	$(RSYNC) pkg/prep/  root@localhost:/mnt/lfs/sources/prep/
-	$(RSYNC) pkg/build/ root@localhost:/mnt/lfs/sources/build/
-	$(SCP) script/stage1.sh root@localhost:/mnt/lfs/sources/prep/stage1.sh
+	$(RSYNC) --delete pkg/prep/  root@localhost:/mnt/lfs/sources/prep/
+	$(RSYNC) --delete pkg/build/ root@localhost:/mnt/lfs/sources/build/
+	$(RSYNC) script/stage1.sh root@localhost:/mnt/lfs/sources/prep/stage1.sh
 	$(SSH_ROOT) 'chown -R lfs:lfs /mnt/lfs/sources && chmod +x /mnt/lfs/sources/prep/*.sh /mnt/lfs/sources/build/*.sh'
 
 # FORCE=pkg1,pkg2  re-run those packages even if stamped.
 # FORCE=all        wipe all stamps (full rebuild).
-FORCE ?=
+# RUN_TESTS=1      run `make check` / `make test` (advisory; failures warn).
+FORCE     ?=
+RUN_TESTS ?= 0
 prep-pkgs:
-	$(SSH_LFS) 'FORCE=$(FORCE) bash /mnt/lfs/sources/prep/stage1.sh'
+	$(SSH_LFS) 'FORCE=$(FORCE) RUN_TESTS=$(RUN_TESTS) bash /mnt/lfs/sources/prep/stage1.sh'
 
 build-pkgs:
-	$(SSH_ROOT) 'FORCE=$(FORCE) bash /mnt/lfs/sources/build/run-build.sh'
+	$(SSH_ROOT) 'FORCE=$(FORCE) RUN_TESTS=$(RUN_TESTS) bash /mnt/lfs/sources/build/run-build.sh'
 
 # Inspect / manage resume state.
 status:
@@ -92,6 +98,12 @@ reset-stamps:
 
 logs:
 	@$(SSH_ROOT) 'ls -lrt /mnt/lfs/sources/.log/prep /mnt/lfs/sources/.log/build 2>/dev/null || true'
+
+# fstrim the loop-mounted ext4 so the host can reclaim blocks freed by
+# `rm -rf <pkg>-<ver>` after each package build.  Useful between phases
+# on space-constrained hosts.
+trim:
+	$(SSH_ROOT) 'fstrim -v /mnt/lfs'
 
 # ----------------------------------------------------------------- utilities
 ssh:

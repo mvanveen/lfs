@@ -1,7 +1,7 @@
 # kmod  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/kmod.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf kmod-34.2
 tar xf kmod-34.2.tar.xz
 cd kmod-34.2
@@ -17,5 +17,5 @@ ninja
 
 ninja install
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf kmod-34.2

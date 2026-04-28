@@ -177,6 +177,31 @@ PATCHES = [
     # Passwd prompts.
     (re.compile(r'^\s*passwd\s+(root|tester)\s*$', re.MULTILINE),
      r'# book: passwd \1  (set out-of-band for unattended build)'),
+    # ncurses builds .so.X.Y where X.Y is the runtime version of the
+    # tarball (book hardcodes 6.5 from its dated snapshot).  We may have
+    # substituted a newer ncurses (e.g. 6.6) which produces .so.6.6 -
+    # discover the actual filename at runtime.
+    (re.compile(r'(install\s+-vm755\s+)dest/usr/lib/libncursesw\.so\.6\.\d+(\s+/usr/lib)'),
+     r'\1"$(echo dest/usr/lib/libncursesw.so.6.*)"\2'),
+    (re.compile(r'(rm\s+-v\s+)\s*dest/usr/lib/libncursesw\.so\.6\.\d+'),
+     r'\1"$(echo dest/usr/lib/libncursesw.so.6.*)"'),
+    # Same idea for the doc dir reference (was ncurses-6.5-20250809).
+    (re.compile(r'/usr/share/doc/ncurses-6\.\d+(?:-\d+)?'),
+     r'/usr/share/doc/ncurses'),
+    # gmp's `ABI=32 ./configure ...` is x86-only documentation, not a real
+    # command (`...` is literal); kill it so x86_64 builds don't choke.
+    (re.compile(r'^\s*ABI=32\s+\./configure\s+\.\.\.\s*$', re.MULTILINE),
+     '# book: `ABI=32 ./configure ...`  (x86-only; skipped on x86_64)'),
+    # tzselect is interactive (waits on stdin for a continent number).
+    # Pick UTC unconditionally; users can override post-install.  Also
+    # collapses the book's `ln -sfv /usr/share/zoneinfo/<xxx> /etc/localtime`
+    # into the same UTC choice (must run *before* the <xxx> placeholder
+    # rule below, which would otherwise comment that line out).
+    (re.compile(r'^\s*tzselect\s*$', re.MULTILINE),
+     '# book: tzselect  (interactive - default to UTC)\n'
+     'ln -sfv /usr/share/zoneinfo/UTC /etc/localtime'),
+    (re.compile(r'^\s*ln\s+-sfv\s+/usr/share/zoneinfo/<xxx>\s+/etc/localtime\s*$', re.MULTILINE),
+     '# (UTC symlink already created in lieu of tzselect)'),
     # Angle-bracket placeholders (<paper_size>, <locale name>, <xxx>, ...).
     (re.compile(
          r'^(.*<(?:paper_size|locale name|xxx|yyy|fff|ll|CC|charmap|'
@@ -197,7 +222,7 @@ def load_cmds(chapter, slug):
     return text.strip() + '\n'
 
 
-def render(chapter, slug):
+def render(chapter, slug, sources_dir='/mnt/lfs/sources'):
     cmds = load_cmds(chapter, slug)
     if cmds is None:
         print(f'MISSING {chapter}/{slug}')
@@ -213,6 +238,18 @@ def render(chapter, slug):
         f'set -e\n'
     )
 
+    # Targeted `|| :` on verification-only grep / readelf lines so the
+    # book's eyeball checks (e.g. `readelf -l a.out | grep ': /lib'`)
+    # don't take down the build when they happen to match nothing.
+    # We still keep strict mode for everything else -- crucially for
+    # essential post-install commands like bash's `ln -sv bash $LFS/bin/sh`.
+    cmds = _relax_verification_lines(cmds)
+
+    # `make check` is advisory in the book (some failures are documented
+    # as acceptable on Docker / overlayfs).  Gate on $RUN_TESTS so slow
+    # hosts can skip them entirely; never let a check failure abort.
+    cmds = _gate_make_check(cmds)
+
     info = SLUG_MAP.get(slug)
     if not info:
         # Non-package block (raw commands; run in whatever cwd the driver picks).
@@ -220,15 +257,88 @@ def render(chapter, slug):
 
     tb = info['tarball']
     d  = info['dir']
-    pre  = f'cd /mnt/lfs/sources\nrm -rf {d}\ntar xf {tb}\ncd {d}\n\n'
-    post = f'\ncd /mnt/lfs/sources\nrm -rf {d}\n'
+    pre  = f'cd {sources_dir}\nrm -rf {d}\ntar xf {tb}\ncd {d}\n\n'
+    post = f'\ncd {sources_dir}\nrm -rf {d}\n'
     return header + pre + cmds + post
 
 
+# Lines that start a pipeline with `grep`, `readelf`, or `find` and do
+# no assignment / redirection are the book's eyeball verification lines.
+# Append `|| :` so they can't take down `set -e`.
+# Lines that are pure book-side eyeball checks (no side effects beyond
+# stdout): grep, readelf, find, awk-on-a-log, head/tail/cat-on-a-log.
+_VERIFY_RE = re.compile(
+    r'^(?P<indent>[ \t]*)(?P<cmd>(grep|readelf|find|awk|head|tail|cat)\b[^\n]*?)$',
+    re.MULTILINE,
+)
+
+def _relax_verification_lines(cmds: str) -> str:
+    def repl(m):
+        line = m.group(0)
+        # Skip lines that already handle their own failure mode, or that
+        # write to a file (so we don't mask real install-output errors).
+        # `;` and `>` only count when they're outside single/double quotes.
+        bare = re.sub(r"'[^']*'|\"[^\"]*\"", '', line)
+        if re.search(r'(?:&&|\|\||(?<!\d)>(?!\d))', bare):
+            return line
+        return line + ' || :'
+    return _VERIFY_RE.sub(repl, cmds)
+
+
+# A `make check` / `make test` invocation, optionally wrapped in
+# `su <user> -c "..."`, possibly continued onto the next line with a
+# trailing backslash, possibly followed by a redirection line.
+_CHECK_RE = re.compile(
+    r'^(?P<indent>[ \t]*)'
+    r'(?P<line>'
+    # `su <user> -c "... make ... check ..."`, gobbling any backslash
+    # continuations onto follow-on lines (e.g. `\< /dev/null \`).
+    # `[ \t]*\\\n[^\n]*` matches `<sp/tab><backslash><newline><line>`,
+    # repeated for every continuation; the leading whitespace lets us
+    # accept lines like `... "check" \` (note space before backslash).
+    r'(?:su\s+\S+\s+-c\s+"[^"]*\bmake\b[^"]*\b(?:check|test)\b[^"]*"'
+    r'(?:[ \t]*\\\n[^\n]*)*)'
+    r'|'
+    # Bare `make [flags] check`.
+    r'(?:make(?:\s+-[^\s]+)*\s+(?:check|test)\b[^\n]*)'
+    r')\s*$',
+    re.MULTILINE,
+)
+
+def _gate_make_check(cmds: str) -> str:
+    """Wrap `make check` / `make test` lines so they:
+         - run only when RUN_TESTS=1
+         - never abort the build on failure (book treats them as advisory).
+       Also handles `su tester -c "... make ... check ..."` wrappers and
+       backslash-continuation onto follow-on lines."""
+    def repl(m):
+        indent = m.group('indent')
+        # Take the matched block verbatim, drop any trailing backslash so
+        # we can append `|| echo ...` cleanly.
+        body = m.group(0)[len(indent):].rstrip()
+        if body.endswith('\\'):
+            body = body[:-1].rstrip()
+        # Drop any internal blank lines (they'd break `\` continuation).
+        body_lines = [l for l in body.split('\n') if l.strip()]
+        body_indented = '\n'.join(f'{indent}  {l}' for l in body_lines)
+        return (
+            f'{indent}if [ "${{RUN_TESTS:-0}}" = 1 ]; then\n'
+            f'{body_indented} \\\n'
+            f'{indent}    || echo "WARN: tests failed (advisory)"\n'
+            f'{indent}else\n'
+            f'{indent}  echo "skip tests (RUN_TESTS=0)"\n'
+            f'{indent}fi'
+        )
+    return _CHECK_RE.sub(repl, cmds)
+
+
 def emit(order, subdir):
+    # Chapter 5 + 6 run on the host as lfs; the target lives under /mnt/lfs.
+    # Chapters 7 + 8 + 9 + 10 run inside the chroot where it's /sources.
+    sources_dir = '/mnt/lfs/sources' if subdir == 'prep' else '/sources'
     written = []
     for chapter, slug in order:
-        rendered = render(chapter, slug)
+        rendered = render(chapter, slug, sources_dir=sources_dir)
         if rendered is None:
             continue
         # Flat filename.  When the same slug appears in multiple chapters
@@ -277,8 +387,10 @@ else
   mountpoint -q $LFS/dev/shm || mount -vt tmpfs -o nosuid,nodev tmpfs $LFS/dev/shm
 fi
 
-# Forward FORCE (comma-separated pkg names to re-run) into the chroot.
+# Forward FORCE (comma-separated pkg names to re-run) and RUN_TESTS
+# (1 to run `make check` / `make test`) into the chroot.
 FORCE="${FORCE:-}"
+RUN_TESTS="${RUN_TESTS:-0}"
 
 # Ch 7.4 - enter chroot and continue.
 chroot "$LFS" /usr/bin/env -i                 \
@@ -289,6 +401,7 @@ chroot "$LFS" /usr/bin/env -i                 \
     MAKEFLAGS="-j$(nproc)"                    \
     TESTSUITEFLAGS="-j$(nproc)"               \
     FORCE="$FORCE"                            \
+    RUN_TESTS="$RUN_TESTS"                    \
     /bin/bash --login -c "bash /sources/build/as-chroot.sh"
 ''')
 

@@ -1,7 +1,7 @@
 # util-linux  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter07/util-linux.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf util-linux-2.41.1
 tar xf util-linux-2.41.1.tar.xz
 cd util-linux-2.41.1
@@ -27,5 +27,5 @@ make
 
 make install
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf util-linux-2.41.1

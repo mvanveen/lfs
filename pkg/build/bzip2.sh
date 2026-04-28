@@ -1,7 +1,7 @@
 # bzip2  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/bzip2.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf bzip2-1.0.8
 tar xf bzip2-1.0.8.tar.gz
 cd bzip2-1.0.8
@@ -29,5 +29,5 @@ done
 
 rm -fv /usr/lib/libbz2.a
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf bzip2-1.0.8

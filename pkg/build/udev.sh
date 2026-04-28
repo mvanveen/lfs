@@ -1,7 +1,7 @@
 # udev  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/udev.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf systemd-257.8
 tar xf systemd-257.8.tar.gz
 cd systemd-257.8
@@ -28,7 +28,7 @@ meson setup ..                  \
       -D vconsole=false
 
 export udev_helpers=$(grep "'name' :" ../src/udev/meson.build | \
-                      awk '{print $3}' | tr -d ",'" | grep -v 'udevadm')
+                      awk '{print $3}' | tr -d ",'" | grep -v 'udevadm') || :
 
 ninja udevadm systemd-hwdb                                           \
       $(ninja -n | grep -Eo '(src/(lib)?udev|rules.d|hwdb.d)/[^ ]*') \
@@ -78,5 +78,5 @@ unset udev_helpers
 
 udev-hwdb update
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf systemd-257.8

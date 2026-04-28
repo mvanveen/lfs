@@ -24,8 +24,10 @@ else
   mountpoint -q $LFS/dev/shm || mount -vt tmpfs -o nosuid,nodev tmpfs $LFS/dev/shm
 fi
 
-# Forward FORCE (comma-separated pkg names to re-run) into the chroot.
+# Forward FORCE (comma-separated pkg names to re-run) and RUN_TESTS
+# (1 to run `make check` / `make test`) into the chroot.
 FORCE="${FORCE:-}"
+RUN_TESTS="${RUN_TESTS:-0}"
 
 # Ch 7.4 - enter chroot and continue.
 chroot "$LFS" /usr/bin/env -i                 \
@@ -36,4 +38,5 @@ chroot "$LFS" /usr/bin/env -i                 \
     MAKEFLAGS="-j$(nproc)"                    \
     TESTSUITEFLAGS="-j$(nproc)"               \
     FORCE="$FORCE"                            \
+    RUN_TESTS="$RUN_TESTS"                    \
     /bin/bash --login -c "bash /sources/build/as-chroot.sh"

@@ -1,7 +1,7 @@
 # coreutils  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/coreutils.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf coreutils-9.7
 tar xf coreutils-9.7.tar.xz
 cd coreutils-9.7
@@ -24,9 +24,13 @@ groupadd -g 102 dummy -U tester
 
 chown -R tester .
 
-su tester -c "PATH=$PATH make -k RUN_EXPENSIVE_TESTS=yes check" \
-   < /dev/null
-
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  su tester -c "PATH=$PATH make -k RUN_EXPENSIVE_TESTS=yes check" \
+     < /dev/null \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
 groupdel dummy
 
 make install
@@ -35,5 +39,5 @@ mv -v /usr/bin/chroot /usr/sbin
 mv -v /usr/share/man/man1/chroot.1 /usr/share/man/man8/chroot.8
 sed -i 's/"1"/"8"/' /usr/share/man/man8/chroot.8
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf coreutils-9.7

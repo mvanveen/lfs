@@ -1,7 +1,7 @@
 # kernel  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter10/kernel.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf linux-6.16.1
 tar xf linux-6.16.1.tar.xz
 cd linux-6.16.1
@@ -32,5 +32,5 @@ install uhci_hcd /sbin/modprobe ehci_hcd ; /sbin/modprobe -i uhci_hcd ; true
 # End /etc/modprobe.d/usb.conf
 EOF
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf linux-6.16.1

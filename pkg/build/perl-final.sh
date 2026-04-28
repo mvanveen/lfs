@@ -1,7 +1,7 @@
 # perl  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/perl.html
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
-cd /mnt/lfs/sources
+cd /sources
 rm -rf perl-5.42.0
 tar xf perl-5.42.0.tar.xz
 cd perl-5.42.0
@@ -31,5 +31,5 @@ TEST_JOBS=$(nproc) make test_harness
 make install
 unset BUILD_ZLIB BUILD_BZIP2
 
-cd /mnt/lfs/sources
+cd /sources
 rm -rf perl-5.42.0

@@ -2,9 +2,9 @@
 # shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
 set -e
 cd /mnt/lfs/sources
-rm -rf ncurses-6.5-20250809
-tar xf ncurses-6.5-20250809.tgz
-cd ncurses-6.5-20250809
+rm -rf ncurses-6.6
+tar xf ncurses-6.6.tar.gz
+cd ncurses-6.6
 
 mkdir build
 pushd build
@@ -35,4 +35,4 @@ sed -e 's/^#if.*XOPEN.*$/#if 1/' \
     -i $LFS/usr/include/curses.h
 
 cd /mnt/lfs/sources
-rm -rf ncurses-6.5-20250809
+rm -rf ncurses-6.6
