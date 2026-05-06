@@ -95,3 +95,31 @@ make lint
 
 runs `shellcheck -S warning` over every shell script, `hadolint` on the
 Dockerfile, `bash -n` for syntax, and `py_compile` on the generators.
+
+## Distribution layer (pkgsrc on top of LFS)
+
+The LFS base build above gives a self-hosting C/POSIX system. To turn it
+into a usable distribution, we layer NetBSD's pkgsrc on top, keeping all
+source artifacts on a dedicated `/srv/sources` partition.
+
+See [`docs/pkgsrc-plan.md`](docs/pkgsrc-plan.md) for the full design, and
+[`docs/qemu-boot-test.md`](docs/qemu-boot-test.md) for the boot-validation
+recipe.
+
+Three-prefix layout:
+
+| prefix      | owner            |
+| ----------- | ---------------- |
+| `/usr`      | LFS (glibc, gcc, coreutils, bash, vim, ...) |
+| `/opt/pkg`  | pkgsrc (`bmake` / `pkgin`-managed packages) |
+| `/usr/local`| BLFS / hand-roll |
+
+pkgsrc is quarterly-versioned: prefix `/opt/pkg-2025Q3`, with `/opt/pkg`
+as a symlink so PATH is stable across upgrades. Distfiles cache lives at
+`/srv/sources/distfiles` and is shared across quarterlies.
+
+```bash
+make sources-partition          # seed /srv/sources/lfs from $LFS/sources
+make pkgsrc-bootstrap            # clone tree, ./bootstrap into /opt/pkg-2025Q3
+make pkgsrc-baseline             # build pkg/pkgsrc-baseline.list
+```

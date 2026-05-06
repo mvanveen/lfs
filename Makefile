@@ -27,7 +27,8 @@ RSYNC    := rsync -a -e 'ssh $(SSH_OPTS)'
 .PHONY: all docker-build docker-run docker-kill clean undo-known-hosts \
         mkimg prep-host dl-sources upload-pkgs \
         prep-pkgs build-pkgs ssh ssh-lfs lint \
-        status reset-stamps logs trim
+        status reset-stamps logs trim \
+        sources-partition pkgsrc-bootstrap pkgsrc-baseline
 
 all: docker-kill clean docker-build docker-run mkimg prep-host \
      dl-sources upload-pkgs prep-pkgs build-pkgs
@@ -112,8 +113,36 @@ ssh-lfs:
 	$(SSH_LFS)
 
 lint:
-	shellcheck -S warning script/*.sh pkg/*/*.sh run.sh kill_container.sh
+	shellcheck -S warning script/*.sh pkg/*/*.sh pkgsrc/*.sh run.sh kill_container.sh
 	@command -v hadolint >/dev/null 2>&1 && hadolint Dockerfile \
 	  || docker run --rm -i hadolint/hadolint < Dockerfile
-	bash -n $$(find script pkg -name '*.sh')
+	bash -n $$(find script pkg pkgsrc -name '*.sh')
 	python3 -m py_compile script/*.py
+
+# ----------------------------------------------------------- pkgsrc layer
+# Phase 1 + 2 + 3 of docs/pkgsrc-plan.md.
+#
+# These run on the LFS system once the base build is complete and the
+# system can reach the network.  They are deliberately separate from the
+# docker-driven base build above so they can be re-run on a real (or
+# qemu-booted) target without rebuilding LFS.
+#
+# Override on the cmdline as needed:
+#   make pkgsrc-bootstrap QUARTER=2025Q4 JOBS=4
+#   make pkgsrc-baseline  LIST=pkg/pkgsrc-baseline.list
+
+QUARTER ?= 2025Q3
+JOBS    ?= $(shell nproc 2>/dev/null || echo 2)
+LIST    ?= pkg/pkgsrc-baseline.list
+
+sources-partition:
+	$(RSYNC) pkgsrc/sources-partition.sh root@localhost:/root/
+	$(SSH_ROOT) 'bash /root/sources-partition.sh'
+
+pkgsrc-bootstrap:
+	$(RSYNC) pkgsrc/bootstrap.sh root@localhost:/root/
+	$(SSH_ROOT) 'QUARTER=$(QUARTER) JOBS=$(JOBS) bash /root/bootstrap.sh'
+
+pkgsrc-baseline:
+	$(RSYNC) pkgsrc/baseline.sh $(LIST) root@localhost:/root/
+	$(SSH_ROOT) 'QUARTER=$(QUARTER) LIST=/root/$(notdir $(LIST)) bash /root/baseline.sh'

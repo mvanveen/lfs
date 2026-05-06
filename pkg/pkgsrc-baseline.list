@@ -1,0 +1,39 @@
+# pkgsrc baseline package set for the LFS-on-pkgsrc distribution.
+#
+# Format: <category>/<package>, one per line.  Blank lines and # comments
+# allowed.  Order matters only insofar as a missing build-dep triggers a
+# longer first run; pkgsrc resolves the rest itself.
+
+# shells & basic interactivity
+shells/bash
+shells/zsh
+
+# editors
+editors/vim
+editors/nano
+
+# version control & developer tools
+devel/git-base
+devel/gmake
+devel/cmake
+devel/pkgconf
+devel/autoconf
+devel/automake
+lang/python313
+
+# net
+security/openssh
+www/curl
+net/wget
+net/dhcpcd
+
+# sysutils people expect to have
+sysutils/htop
+sysutils/tree
+sysutils/lsof
+sysutils/coreutils
+misc/tmux
+
+# certs (so curl/openssl trust upstream sites)
+security/mozilla-rootcerts
+security/mozilla-rootcerts-openssl
