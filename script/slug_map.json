@@ -23,6 +23,10 @@
     "dir": "bash-5.3",
     "tarball": "bash-5.3.tar.gz"
   },
+  "bootscripts": {
+    "dir": "lfs-bootscripts-20250827",
+    "tarball": "lfs-bootscripts-20250827.tar.xz"
+  },
   "bc": {
     "dir": "bc-7.0.3",
     "tarball": "bc-7.0.3.tar.xz"
@@ -294,6 +298,10 @@
   "sed": {
     "dir": "sed-4.9",
     "tarball": "sed-4.9.tar.xz"
+  },
+  "sqlite": {
+    "dir": "sqlite-autoconf-3500400",
+    "tarball": "sqlite-autoconf-3500400.tar.gz"
   },
   "setuptools": {
     "dir": "setuptools-80.9.0",

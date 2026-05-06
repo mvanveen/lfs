@@ -93,3 +93,4 @@ https://www.linuxfromscratch.org/patches/lfs/12.4/glibc-2.42-fhs-1.patch
 https://www.linuxfromscratch.org/patches/lfs/12.4/kbd-2.8.0-backspace-1.patch
 https://www.linuxfromscratch.org/patches/lfs/12.4/sysvinit-3.14-consolidated-1.patch
 https://files.pythonhosted.org/packages/source/p/packaging/packaging-25.0.tar.gz
+https://sqlite.org/2025/sqlite-autoconf-3500400.tar.gz

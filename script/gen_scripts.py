@@ -126,6 +126,10 @@ BUILD_ORDER = [
     ('ch8-system', 'openssl'),
     ('ch8-system', 'libelf'),
     ('ch8-system', 'libffi'),
+    # sqlite is a BLFS package, but Python's _sqlite3 extension is so
+    # commonly assumed (pkgin, plenty of pkgsrc Python packages) that we
+    # build it here BEFORE Python so the C extension picks it up.
+    ('ch8-system', 'sqlite'),
     ('ch8-system', 'Python'),
     ('ch8-system', 'flit-core'),
     ('ch8-system', 'packaging'),
@@ -160,6 +164,7 @@ BUILD_ORDER = [
     ('ch8-system', 'sysklogd'),
     ('ch8-system', 'sysvinit'),
     # ch 9 - system configuration
+    ('ch9-config', 'bootscripts'),
     ('ch9-config', 'etcshells'),
     ('ch9-config', 'inputrc'),
     ('ch9-config', 'locale'),

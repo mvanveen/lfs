@@ -99,6 +99,7 @@ run_pkg /sources/build/automake.sh
 run_pkg /sources/build/openssl.sh
 run_pkg /sources/build/libelf.sh
 run_pkg /sources/build/libffi.sh
+run_pkg /sources/build/sqlite.sh
 run_pkg /sources/build/Python-final.sh
 run_pkg /sources/build/flit-core.sh
 run_pkg /sources/build/packaging.sh
@@ -131,6 +132,7 @@ run_pkg /sources/build/util-linux-final.sh
 run_pkg /sources/build/e2fsprogs.sh
 run_pkg /sources/build/sysklogd.sh
 run_pkg /sources/build/sysvinit.sh
+run_pkg /sources/build/bootscripts.sh
 run_pkg /sources/build/etcshells.sh
 run_pkg /sources/build/inputrc.sh
 run_pkg /sources/build/locale.sh
