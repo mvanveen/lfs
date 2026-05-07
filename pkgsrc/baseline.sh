@@ -21,8 +21,38 @@ if [ ! -d "$PKGSRCDIR" ]; then
 fi
 
 export PATH=/opt/pkg/sbin:/opt/pkg/bin:$PATH
+export SSL_CERT_FILE=${SSL_CERT_FILE:-/etc/ssl/certs/ca-certificates.crt}
+export SSL_CERT_DIR=${SSL_CERT_DIR:-/etc/ssl/certs}
 
 installed() { pkg_info -e "$1" >/dev/null 2>&1; }
+
+# ----- pre-baseline: bootstrap a working fetch tool then pkgin ----------
+# pkgin needs curl (or another fetch tool) for dep resolution, but on a
+# fresh LFS we have neither. Build them in this exact order from source.
+# www/curl needs distfiles to already be staged in $DISTDIR (the
+# bootstrap-built net/fetch lacks TLS).
+if ! installed curl; then
+    echo "== www/curl  building from source (preboot)"
+    cd "$PKGSRCDIR/www/curl"
+    bmake install clean clean-depends
+else
+    echo "== www/curl  already installed (preboot)"
+fi
+
+# Once curl is installed, switch pkgsrc's fetcher to it so HTTPS
+# distfiles work without further pre-staging.
+MK=/opt/pkg/etc/mk.conf
+if command -v curl >/dev/null 2>&1 && ! grep -q '^FETCH_USING=' "$MK" 2>/dev/null; then
+    echo "FETCH_USING=    curl" >> "$MK"
+    echo "== switched pkgsrc fetcher to curl (HTTPS now works)"
+fi
+
+# pkgin closes the loop: binary package management on top of curl.
+if ! installed pkgin; then
+    echo "== pkgtools/pkgin  building from source"
+    cd "$PKGSRCDIR/pkgtools/pkgin"
+    bmake install clean clean-depends
+fi
 
 while read -r line; do
     line=${line%%#*}

@@ -281,6 +281,36 @@ PATCHES = [
      'ln -sfv /usr/share/zoneinfo/UTC /etc/localtime'),
     (re.compile(r'^\s*ln\s+-sfv\s+/usr/share/zoneinfo/<xxx>\s+/etc/localtime\s*$', re.MULTILINE),
      '# (UTC symlink already created in lieu of tzselect)'),
+    # LFS's /etc/profile doesn't source /etc/profile.d/*.sh; add a loop
+    # before the `# End /etc/profile` marker so our pkgsrc.sh / ssl-cert.sh
+    # / etc snippets actually get loaded by login shells.
+    (re.compile(
+        r'^# End /etc/profile\s*$', re.MULTILINE),
+     'for s in /etc/profile.d/*.sh; do [ -r "$s" ] && . "$s"; done\n# End /etc/profile'),
+    # The book's network.sh /etc/resolv.conf is full of `<placeholders>`
+    # that get commented out by the angle-bracket rule below, leaving an
+    # empty resolv.conf. Replace it with public DNS so the booted system
+    # can fetch (e.g. for pkgsrc).
+    (re.compile(
+        r'^domain\s+<Your Domain Name>\s*$', re.MULTILINE),
+     '# domain (placeholder removed)'),
+    (re.compile(
+        r'^nameserver\s+<IP address of your primary nameserver>\s*$',
+        re.MULTILINE),
+     'nameserver 1.1.1.1'),
+    (re.compile(
+        r'^nameserver\s+<IP address of your secondary nameserver>\s*$',
+        re.MULTILINE),
+     'nameserver 8.8.8.8'),
+    # The book's locale.sh /etc/profile heredoc has an `else` branch
+    # whose only content is the angle-bracket placeholder we then
+    # comment out below. An else with only a comment is a bash syntax
+    # error, so substitute a sane default before the placeholder rule
+    # turns the line into a comment.
+    (re.compile(
+        r'^(?P<indent>[ \t]+)export LANG=<ll>_<CC>\.<charmap><@modifiers>\s*$',
+        re.MULTILINE),
+     r'\g<indent>export LANG=C.UTF-8   # safe default; book uses an interactive placeholder'),
     # Angle-bracket placeholders (<paper_size>, <locale name>, <xxx>, ...).
     (re.compile(
          r'^(.*<(?:paper_size|locale name|xxx|yyy|fff|ll|CC|charmap|'

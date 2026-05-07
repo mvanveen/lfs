@@ -20,8 +20,9 @@ done
 if [[ "$TERM" = linux ]]; then
   export LANG=C.UTF-8
 else
-# TEMPLATE (edit before running):   export LANG=<ll>_<CC>.<charmap><@modifiers>
+  export LANG=C.UTF-8   # safe default; book uses an interactive placeholder
 fi
 
+for s in /etc/profile.d/*.sh; do [ -r "$s" ] && . "$s"; done
 # End /etc/profile
 EOF

@@ -15,10 +15,9 @@ EOF
 cat > /etc/resolv.conf << "EOF"
 # Begin /etc/resolv.conf
 
-domain <Your Domain Name>
-nameserver <IP address of your primary nameserver>
-nameserver <IP address of your secondary nameserver>
-
+# domain (placeholder removed)
+nameserver 1.1.1.1
+nameserver 8.8.8.8
 # End /etc/resolv.conf
 EOF
 
