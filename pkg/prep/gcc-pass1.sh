@@ -1,28 +1,17 @@
-#TODO: don't hardcode versions
+# gcc-pass1  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter05/gcc-pass1.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
-rm -rf gcc-9.2.0
-tar xf gcc-9.2.0.tar.xz
-cd gcc-9.2.0
+rm -rf gcc-15.2.0
+tar xf gcc-15.2.0.tar.xz
+cd gcc-15.2.0
 
-tar -xf ../mpfr-4.0.2.tar.xz
-mv -v mpfr-4.0.2 mpfr
-tar -xf ../gmp-6.2.0.tar.xz
-mv -v gmp-6.2.0 gmp
-tar -xf ../mpc-1.1.0.tar.gz
-mv -v mpc-1.1.0 mpc
-
-for file in gcc/config/{linux,i386/linux{,64}}.h
-do
-  cp -uv $file{,.orig}
-  sed -e 's@/lib\(64\)\?\(32\)\?/ld@/tools&@g' \
-      -e 's@/usr@/tools@g' $file.orig > $file
-  echo '
-#undef STANDARD_STARTFILE_PREFIX_1
-#undef STANDARD_STARTFILE_PREFIX_2
-#define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"
-#define STANDARD_STARTFILE_PREFIX_2 ""' >> $file
-  touch $file.orig
-done
+tar -xf ../mpfr-4.2.2.tar.xz
+mv -v mpfr-4.2.2 mpfr
+tar -xf ../gmp-6.3.0.tar.xz
+mv -v gmp-6.3.0 gmp
+tar -xf ../mpc-1.3.1.tar.gz
+mv -v mpc-1.3.1 mpc
 
 case $(uname -m) in
   x86_64)
@@ -32,30 +21,36 @@ case $(uname -m) in
 esac
 
 mkdir -v build
-cd build
+cd       build
 
-../configure                                       \
-    --target=$LFS_TGT                              \
-    --prefix=/tools                                \
-    --with-glibc-version=2.11                      \
-    --with-sysroot=$LFS                            \
-    --with-newlib                                  \
-    --without-headers                              \
-    --with-local-prefix=/tools                     \
-    --with-native-system-header-dir=/tools/include \
-    --disable-nls                                  \
-    --disable-shared                               \
-    --disable-multilib                             \
-    --disable-decimal-float                        \
-    --disable-threads                              \
-    --disable-libatomic                            \
-    --disable-libgomp                              \
-    --disable-libquadmath                          \
-    --disable-libssp                               \
-    --disable-libvtv                               \
-    --disable-libstdcxx                            \
+../configure                  \
+    --target=$LFS_TGT         \
+    --prefix=$LFS/tools       \
+    --with-glibc-version=2.42 \
+    --with-sysroot=$LFS       \
+    --with-newlib             \
+    --without-headers         \
+    --enable-default-pie      \
+    --enable-default-ssp      \
+    --disable-nls             \
+    --disable-shared          \
+    --disable-multilib        \
+    --disable-threads         \
+    --disable-libatomic       \
+    --disable-libgomp         \
+    --disable-libquadmath     \
+    --disable-libssp          \
+    --disable-libvtv          \
+    --disable-libstdcxx       \
     --enable-languages=c,c++
 
-make -j24
+make
 
 make install
+
+cd ..
+cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
+  `dirname $($LFS_TGT-gcc -print-libgcc-file-name)`/include/limits.h
+
+cd /mnt/lfs/sources
+rm -rf gcc-15.2.0

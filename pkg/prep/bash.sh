@@ -1,16 +1,21 @@
-cd /mnt/lfs/sources;
+# bash  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter06/bash.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
+cd /mnt/lfs/sources
+rm -rf bash-5.3
+tar xf bash-5.3.tar.gz
+cd bash-5.3
 
-rm -rf bash-5.0
-tar xzf bash-5.0.tar.gz
-cd bash-5.0
-
-./configure --prefix=/tools --without-bash-malloc
-
-sed -i 's/lcurses/lncursesw/g' Makefile
+./configure --prefix=/usr                      \
+            --build=$(sh support/config.guess) \
+            --host=$LFS_TGT                    \
+            --without-bash-malloc
 
 make
 
+make DESTDIR=$LFS install
 
-make install
+ln -sfv bash $LFS/bin/sh
 
-ln -sv bash /tools/bin/sh
+cd /mnt/lfs/sources
+rm -rf bash-5.3

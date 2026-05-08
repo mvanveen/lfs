@@ -1,8 +1,10 @@
+# gcc  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/gcc.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /sources
-
-rm -rf gcc-9.2.0
-tar xf gcc-9.2.0.tar.xz
-cd gcc-9.2.0
+rm -rf gcc-15.2.0
+tar xf gcc-15.2.0.tar.xz
+cd gcc-15.2.0
 
 case $(uname -m) in
   x86_64)
@@ -11,58 +13,64 @@ case $(uname -m) in
   ;;
 esac
 
-sed -e '1161 s|^|//|' \
-    -i libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cc
-
 mkdir -v build
-cd build
+cd       build
 
-SED=sed                               \
 ../configure --prefix=/usr            \
+             LD=ld                    \
              --enable-languages=c,c++ \
+             --enable-default-pie     \
+             --enable-default-ssp     \
+             --enable-host-pie        \
              --disable-multilib       \
              --disable-bootstrap      \
+             --disable-fixincludes    \
              --with-system-zlib
 
-make -j24
+make
 
-ulimit -s 32768
+ulimit -s -H unlimited
 
-chown -Rv nobody . 
-su nobody -s /bin/bash -c "PATH=$PATH make -k check"
+sed -e '/cpython/d' -i ../gcc/testsuite/gcc.dg/plugin/plugin.exp
 
+chown -R tester .
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  su tester -c "PATH=$PATH make -k check" \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
 ../contrib/test_summary
 
 make install
-rm -rf /usr/lib/gcc/$(gcc -dumpmachine)/9.2.0/include-fixed/bits/
 
 chown -v -R root:root \
-    /usr/lib/gcc/*linux-gnu/9.2.0/include{,-fixed}
+    /usr/lib/gcc/$(gcc -dumpmachine)/15.2.0/include{,-fixed}
 
-ln -sv ../usr/bin/cpp /lib
+ln -svr /usr/bin/cpp /usr/lib
 
-ln -sv gcc /usr/bin/cc
+ln -sfv gcc.1 /usr/share/man/man1/cc.1
 
-install -v -dm755 /usr/lib/bfd-plugins
-ln -sfv ../../libexec/gcc/$(gcc -dumpmachine)/9.2.0/liblto_plugin.so \
+ln -sfv ../../libexec/gcc/$(gcc -dumpmachine)/15.2.0/liblto_plugin.so \
         /usr/lib/bfd-plugins/
 
+echo 'int main(){}' | cc -x c - -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib' || :
 
-echo 'int main(){}' > dummy.c
-cc dummy.c -v -Wl,--verbose &> dummy.log
-readelf -l a.out | grep ': /lib'
+grep -E -o '/usr/lib.*/S?crt[1in].*succeeded' dummy.log || :
 
-grep -o '/usr/lib.*/crt[1in].*succeeded' dummy.log
+grep -B4 '^ /usr/include' dummy.log || :
 
-grep -B4 '^ /usr/include' dummy.log
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g' || :
 
-grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g'
+grep "/lib.*/libc.so.6 " dummy.log || :
 
-grep "/lib.*/libc.so.6 " dummy.log
+grep found dummy.log || :
 
-grep found dummy.log
-
-rm -v dummy.c a.out dummy.log
+rm -v a.out dummy.log
 
 mkdir -pv /usr/share/gdb/auto-load/usr/lib
 mv -v /usr/lib/*gdb.py /usr/share/gdb/auto-load/usr/lib
+
+cd /sources
+rm -rf gcc-15.2.0

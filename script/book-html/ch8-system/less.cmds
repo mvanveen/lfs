@@ -1,0 +1,10 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/less.html
+
+./configure --prefix=/usr --sysconfdir=/etc
+
+make
+
+make check
+
+make install
+

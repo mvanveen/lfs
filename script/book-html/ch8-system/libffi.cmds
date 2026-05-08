@@ -1,0 +1,12 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/libffi.html
+
+./configure --prefix=/usr    \
+            --disable-static \
+            --with-gcc-arch=native
+
+make
+
+make check
+
+make install
+

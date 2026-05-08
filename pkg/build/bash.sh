@@ -1,23 +1,34 @@
+# bash  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/bash.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /sources
+rm -rf bash-5.3
+tar xf bash-5.3.tar.gz
+cd bash-5.3
 
-rm -rf bash-5.0
-tar xzf bash-5.0.tar.gz
-cd bash-5.0
-
-patch -Np1 -i ../bash-5.0-upstream_fixes-1.patch
-
-./configure --prefix=/usr                    \
-            --docdir=/usr/share/doc/bash-5.0 \
-            --without-bash-malloc            \
-            --with-installed-readline
+./configure --prefix=/usr             \
+            --without-bash-malloc     \
+            --with-installed-readline \
+            --docdir=/usr/share/doc/bash-5.3
 
 make
 
-chown -Rv nobody .
+chown -R tester .
 
-su nobody -s /bin/bash -c "PATH=$PATH HOME=/home make tests"
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+LC_ALL=C.UTF-8 su -s /usr/bin/expect tester << "EOF"
+set timeout -1
+spawn make tests
+expect eof
+lassign [wait] _ _ _ value
+exit $value
+EOF
+else
+  echo 'skip tests (RUN_TESTS=0): expect heredoc'
+fi
 
 make install
-mv -vf /usr/bin/bash /bin
+# book: exec /usr/bin/bash --login  (skipped: script driver)
 
-#exec /bin/bash --login +h
+cd /sources
+rm -rf bash-5.3

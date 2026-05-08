@@ -1,29 +1,54 @@
+# glibc  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter05/glibc.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
+rm -rf glibc-2.42
+tar xf glibc-2.42.tar.xz
+cd glibc-2.42
 
-rm -rf xf glibc-2.31
-tar xf glibc-2.31.tar.xz
-cd glibc-2.31
+case $(uname -m) in
+    i?86)   ln -sfv ld-linux.so.2 $LFS/lib/ld-lsb.so.3
+    ;;
+    x86_64) ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64
+            ln -sfv ../lib/ld-linux-x86-64.so.2 $LFS/lib64/ld-lsb-x86-64.so.3
+    ;;
+esac
+
+patch -Np1 -i ../glibc-2.42-fhs-1.patch
 
 mkdir -v build
-cd build
+cd       build
 
-mkdir -p tmp
+echo "rootsbindir=/usr/sbin" > configparms
 
 ../configure                             \
-      TMPDIR='tmp'                      \
-      --prefix=/tools                    \
+      --prefix=/usr                      \
       --host=$LFS_TGT                    \
       --build=$(../scripts/config.guess) \
-      --enable-kernel=3.2                \
-      --with-headers=/tools/include      \
-      libc_cv_forced_unwind=yes           \
-      libc_cv_c_cleanup=yes
-      #libc_cv_ctors_header=yes
+      --disable-nscd                     \
+      libc_cv_slibdir=/usr/lib           \
+      --enable-kernel=5.4
 
-make -j1
+make
 
-make install
+make DESTDIR=$LFS install
 
-echo 'int main() {}' > dummy.c;
-$LFS_TGT-gcc dummy.c
-readelf -l a.out | grep ': /tools'
+sed '/RTLDLIST=/s@/usr@@g' -i $LFS/usr/bin/ldd
+
+echo 'int main(){}' | $LFS_TGT-gcc -x c - -v -Wl,--verbose &> dummy.log
+readelf -l a.out | grep ': /lib' || :
+
+grep -E -o "$LFS/lib.*/S?crt[1in].*succeeded" dummy.log || :
+
+grep -B3 "^ $LFS/usr/include" dummy.log || :
+
+grep 'SEARCH.*/usr/lib' dummy.log |sed 's|; |\n|g' || :
+
+grep "/lib.*/libc.so.6 " dummy.log || :
+
+grep found dummy.log || :
+
+rm -v a.out dummy.log
+
+cd /mnt/lfs/sources
+rm -rf glibc-2.42

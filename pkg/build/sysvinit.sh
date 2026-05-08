@@ -1,12 +1,16 @@
-cd /sources;
+# sysvinit  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/sysvinit.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
+cd /sources
+rm -rf sysvinit-3.14
+tar xf sysvinit-3.14.tar.xz
+cd sysvinit-3.14
 
-
-rm -rf sysvinit-2.96
-tar xf sysvinit-2.96.tar.xz
-cd sysvinit-2.96
-
-patch -Np1 -i ../sysvinit-2.96-consolidated-1.patch
+patch -Np1 -i ../sysvinit-3.14-consolidated-1.patch
 
 make
 
 make install
+
+cd /sources
+rm -rf sysvinit-3.14

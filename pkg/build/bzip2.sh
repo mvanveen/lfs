@@ -1,7 +1,9 @@
-cd /sources;
-
+# bzip2  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/bzip2.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
+cd /sources
 rm -rf bzip2-1.0.8
-tar xzf bzip2-1.0.8.tar.gz
+tar xf bzip2-1.0.8.tar.gz
 cd bzip2-1.0.8
 
 patch -Np1 -i ../bzip2-1.0.8-install_docs-1.patch
@@ -17,9 +19,15 @@ make
 
 make PREFIX=/usr install
 
-cp -v bzip2-shared /bin/bzip2
-cp -av libbz2.so* /lib
-ln -sv ../../lib/libbz2.so.1.0 /usr/lib/libbz2.so
-rm -v /usr/bin/{bunzip2,bzcat,bzip2}
-ln -sv bzip2 /bin/bunzip2
-ln -sv bzip2 /bin/bzcat
+cp -av libbz2.so.* /usr/lib
+ln -sfv libbz2.so.1.0.8 /usr/lib/libbz2.so
+
+cp -v bzip2-shared /usr/bin/bzip2
+for i in /usr/bin/{bzcat,bunzip2}; do
+  ln -sfv bzip2 $i
+done
+
+rm -fv /usr/lib/libbz2.a
+
+cd /sources
+rm -rf bzip2-1.0.8

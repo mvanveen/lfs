@@ -1,20 +1,38 @@
-cd /mnt/lfs/sources;
+# ncurses  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter06/ncurses.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
+cd /mnt/lfs/sources
+rm -rf ncurses-6.6
+tar xf ncurses-6.6.tar.gz
+cd ncurses-6.6
 
-rm -rf ncurses-6.2
-tar xzf ncurses-6.2.tar.gz
-cd ncurses-6.2
+mkdir build
+pushd build
+  ../configure --prefix=$LFS/tools AWK=gawk
+  make -C include
+  make -C progs tic
+  install progs/tic $LFS/tools/bin
+popd
 
-sed -i s/mawk// configure
-
-./configure --prefix=/tools \
-            --with-shared   \
-            --without-debug \
-	    --without-ada   \
-	    --enable-widec  \
-	    --enable-overwrite
+./configure --prefix=/usr                \
+            --host=$LFS_TGT              \
+            --build=$(./config.guess)    \
+            --mandir=/usr/share/man      \
+            --with-manpage-format=normal \
+            --with-shared                \
+            --without-normal             \
+            --with-cxx-shared            \
+            --without-debug              \
+            --without-ada                \
+            --disable-stripping          \
+            AWK=gawk
 
 make
 
-make install
+make DESTDIR=$LFS install
+ln -sfv libncursesw.so $LFS/usr/lib/libncurses.so
+sed -e 's/^#if.*XOPEN.*$/#if 1/' \
+    -i $LFS/usr/include/curses.h
 
-#ln -s libcursesw.so /tools/lib/libncurses.so
+cd /mnt/lfs/sources
+rm -rf ncurses-6.6

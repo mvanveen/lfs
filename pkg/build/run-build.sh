@@ -1,34 +1,42 @@
 #!/bin/bash
+# Outside chroot: mount the virtual kernel filesystems then chroot into
+# $LFS and run as-chroot.sh.
+set -euo pipefail
 
-set -e
-echo "Running build.."
+LFS=${LFS:-/mnt/lfs}
 
-export LFS='/mnt/lfs/'
+# Ch 7.2 - changing ownership of anything still owned by the lfs user.
+chown --from lfs -R root:root $LFS/{usr,lib,var,etc,bin,sbin,tools} 2>/dev/null || true
+case $(uname -m) in
+  x86_64) chown --from lfs -R root:root $LFS/lib64 2>/dev/null || true ;;
+esac
 
-# prepartion
-sh /tools/prepare-vkfs.sh
+# Ch 7.3 - mount virtual kernel file systems.
+mkdir -pv $LFS/{dev,proc,sys,run}
+mountpoint -q $LFS/dev     || mount -v --bind /dev $LFS/dev
+mountpoint -q $LFS/dev/pts || mount -vt devpts devpts -o gid=5,mode=0620 $LFS/dev/pts
+mountpoint -q $LFS/proc    || mount -vt proc proc $LFS/proc
+mountpoint -q $LFS/sys     || mount -vt sysfs sysfs $LFS/sys
+mountpoint -q $LFS/run     || mount -vt tmpfs tmpfs $LFS/run
+if [ -h $LFS/dev/shm ]; then
+  install -v -d -m 1777 $LFS$(realpath /dev/shm)
+else
+  mountpoint -q $LFS/dev/shm || mount -vt tmpfs -o nosuid,nodev tmpfs $LFS/dev/shm
+fi
 
-# enter and continue in chroot environment with tools
-chroot "$LFS" /tools/bin/env -i                 \
-  HOME=/root TERM="$TERM" PS1='\u:\w\$ '        \
-  PATH=/bin:/usr/bin:/sbin:/usr/sbin:/tools/bin \
-  LFS="$LFS" LC_ALL="$LC_ALL"                   \
-  LFS_TGT="$LFS_TGT" MAKEFLAGS="$MAKEFLAGS"     \
-  LFS_TEST="$LFS_TEST" LFS_DOCS="$LFS_DOCS"     \
-  JOB_COUNT="$JOB_COUNT"                        \
-  /tools/bin/bash --login +h                    \
-  -c "sh /tools/as-chroot-with-tools.sh"
+# Forward FORCE (comma-separated pkg names to re-run) and RUN_TESTS
+# (1 to run `make check` / `make test`) into the chroot.
+FORCE="${FORCE:-}"
+RUN_TESTS="${RUN_TESTS:-0}"
 
-## enter and continue in chroot environment with usr
-#chroot "$LFS" /usr/bin/env -i                   \
-#  HOME=/root TERM="$TERM" PS1='\u:\w\$ '        \
-#  PATH=/bin:/usr/bin:/sbin:/usr/sbin            \
-#  LFS="$LFS" LC_ALL="$LC_ALL"                   \
-#  LFS_TGT="$LFS_TGT" MAKEFLAGS="$MAKEFLAGS"     \
-#  LFS_TEST="$LFS_TEST" LFS_DOCS="$LFS_DOCS"     \
-#  JOB_COUNT="$JOB_COUNT"                        \
-#  /bin/bash --login                             \
-#  -c "sh /tools/as-chroot-with-usr.sh"
-#
-## cleanup
-#sh /tools/9.x-cleanup.sh
+# Ch 7.4 - enter chroot and continue.
+chroot "$LFS" /usr/bin/env -i                 \
+    HOME=/root                                \
+    TERM="$TERM"                              \
+    PS1='(lfs chroot) \u:\w\$ '               \
+    PATH=/usr/bin:/usr/sbin                   \
+    MAKEFLAGS="-j$(nproc)"                    \
+    TESTSUITEFLAGS="-j$(nproc)"               \
+    FORCE="$FORCE"                            \
+    RUN_TESTS="$RUN_TESTS"                    \
+    /bin/bash --login -c "bash /sources/build/as-chroot.sh"

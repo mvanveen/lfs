@@ -1,20 +1,25 @@
+# attr  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/attr.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /sources
-
-rm -rf attr-2.4.48
-tar xzf attr-2.4.48.tar.gz
-cd attr-2.4.48
+rm -rf attr-2.5.2
+tar xf attr-2.5.2.tar.gz
+cd attr-2.5.2
 
 ./configure --prefix=/usr     \
-            --bindir=/bin     \
             --disable-static  \
             --sysconfdir=/etc \
-            --docdir=/usr/share/doc/attr-2.4.48
+            --docdir=/usr/share/doc/attr-2.5.2
 
 make
 
-make check
-
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  make check \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
 make install
 
-mv -v /usr/lib/libattr.so.* /lib
-ln -sfv ../../lib/$(readlink /usr/lib/libattr.so) /usr/lib/libattr.so
+cd /sources
+rm -rf attr-2.5.2

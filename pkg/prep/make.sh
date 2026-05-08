@@ -1,13 +1,18 @@
+# make  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter06/make.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
+rm -rf make-4.4.1
+tar xf make-4.4.1.tar.gz
+cd make-4.4.1
 
-rm -rf make-4.3
-tar xzf make-4.3.tar.gz
-cd make-4.3
-
-./configure --prefix=/tools --without-guile
+./configure --prefix=/usr   \
+            --host=$LFS_TGT \
+            --build=$(build-aux/config.guess)
 
 make
 
-make check
+make DESTDIR=$LFS install
 
-make install
+cd /mnt/lfs/sources
+rm -rf make-4.4.1

@@ -1,74 +1,148 @@
+# End-to-end driver for a dockerized LFS 12.4 (SysV) build.
+#
+# Flow
+# ----
+#   docker-build / docker-run   build the Ubuntu host image and start it
+#   mkimg                       partition, format, mount /mnt/lfs inside it
+#   prep-host                   create the `lfs` user, set up env/dirs
+#   dl-sources                  wget all tarballs + patches
+#   upload-pkgs                 copy pkg/prep + pkg/build into /mnt/lfs/sources
+#   prep-pkgs                   (lfs user) ch 5 + ch 6 - cross toolchain +
+#                               cross-compiled temp tools
+#   build-pkgs                  (root) chroot in; ch 7 + 8 + 9 + 10
+#
+# `make all` chains all of the above.
+
+SHELL          := /bin/bash
+IMAGE          := linuxfromscratch
+CONTAINER_PORT := 2222
+SSH_OPTS := -p $(CONTAINER_PORT) -o StrictHostKeyChecking=no
+SSH_ROOT := ssh $(SSH_OPTS) root@localhost
+SSH_LFS  := ssh $(SSH_OPTS) lfs@localhost
+# One tool for host->container copies: rsync over ssh.  Works for single
+# files or whole trees; -a preserves perms/times; --delete (only where
+# used below) keeps the destination in sync with the source.
+RSYNC    := rsync -a -e 'ssh $(SSH_OPTS)'
+
+.PHONY: all docker-build docker-run docker-kill clean undo-known-hosts \
+        mkimg prep-host dl-sources upload-pkgs \
+        prep-pkgs build-pkgs ssh ssh-lfs lint \
+        status reset-stamps logs trim \
+        sources-partition pkgsrc-bootstrap pkgsrc-baseline
+
+all: docker-kill clean docker-build docker-run mkimg prep-host \
+     dl-sources upload-pkgs prep-pkgs build-pkgs
+
+# ----------------------------------------------------------------- container
 docker-build:
-	docker build . -t linuxfromscratch
+	docker build . -t $(IMAGE)
 
 docker-run:
-	#docker run -v sources:/sources -p 2222:22 -d linuxfromscratch
-	#-v ${CURDIR}/lfs.img:/root/lfs.img 
-	docker run -p 2222:22 -d --privileged linuxfromscratch
+	docker run -p $(CONTAINER_PORT):22 -d --privileged $(IMAGE)
+	@for i in $$(seq 1 30); do \
+	   $(SSH_ROOT) true 2>/dev/null && exit 0; sleep 1; \
+	 done; echo "sshd unreachable" >&2; exit 1
 
 docker-kill:
 	./kill_container.sh
 
 undo-known-hosts:
-	#sed -i '' -e '$$ d' ~/.ssh/known_hosts # mac os x specific
-	#sed -i '$$ d' ~/.ssh/known_hosts # linux specific
-	rm -rf ~/.ssh/known_hosts
+	ssh-keygen -R '[localhost]:$(CONTAINER_PORT)' || true
 
 clean:
-	rm -rf lfs.img
-	rm -rf sources/*
-	docker rmi -f linuxfromscratch
+	rm -f lfs.img
+	docker rmi -f $(IMAGE) || true
 
-ext4-img:
-	scp -P 2222 script/mkext4.sh root@localhost: && ssh -p 2222 -o StrictHostKeyChecking=no -l "root" "localhost" "source mkext4.sh"
+# ----------------------------------------------------------------- build steps
+mkimg:
+	$(RSYNC) script/mkext4.sh root@localhost:/root/
+	$(SSH_ROOT) 'bash /root/mkext4.sh'
 
-ssh:
-	./ssh.sh
-
-run-stage0:
-	cat script/stage0.sh | ssh -p 2222 -o StrictHostKeyChecking=no -l "root" "localhost"
-
-run-stage1:
-	cat script/stage1.sh | ssh -p 2222 -o StrictHostKeyChecking=no -l "root" "localhost"
+prep-host:
+	$(RSYNC) script/stage0.sh root@localhost:/root/
+	$(SSH_ROOT) 'bash /root/stage0.sh'
 
 dl-sources:
-	cat packages.txt | xargs -n1 ssh -p 2222 lfs@localhost wget --continue --directory-prefix=/mnt/lfs/sources
+	$(RSYNC) packages.txt md5sums root@localhost:/mnt/lfs/sources/
+	$(SSH_ROOT) 'cd /mnt/lfs/sources && wget --continue --timeout=30 --tries=3 --input-file=packages.txt && md5sum -c md5sums'
 
+# --delete on the pkg trees so renames / removals propagate; the sibling
+# .done/ and .log/ dirs under /mnt/lfs/sources/ are unaffected because
+# we sync into prep/ and build/ subdirs, not the parent.
+upload-pkgs:
+	$(RSYNC) --delete pkg/prep/  root@localhost:/mnt/lfs/sources/prep/
+	$(RSYNC) --delete pkg/build/ root@localhost:/mnt/lfs/sources/build/
+	$(RSYNC) script/stage1.sh root@localhost:/mnt/lfs/sources/prep/stage1.sh
+	$(SSH_ROOT) 'chown -R lfs:lfs /mnt/lfs/sources && chmod +x /mnt/lfs/sources/prep/*.sh /mnt/lfs/sources/build/*.sh'
+
+# FORCE=pkg1,pkg2  re-run those packages even if stamped.
+# FORCE=all        wipe all stamps (full rebuild).
+# RUN_TESTS=1      run `make check` / `make test` (advisory; failures warn).
+FORCE     ?=
+RUN_TESTS ?= 0
 prep-pkgs:
-	scp -P 2222 pkg/prep/binutils.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source binutils.sh"
-	scp -P 2222 pkg/prep/gcc-pass1.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source gcc-pass1.sh"
-	scp -P 2222 pkg/prep/linux-headers.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source linux-headers.sh"
-	scp -P 2222 pkg/prep/glibc.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source glibc.sh"
-	scp -P 2222 pkg/prep/libstdcplusplus.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source libstdcplusplus.sh"
-	scp -P 2222 pkg/prep/binutils-pass-2.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source binutils-pass-2.sh"
-	scp -P 2222 pkg/prep/gcc-pass2.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source gcc-pass2.sh"
-	scp -P 2222 pkg/prep/tcl.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source tcl.sh"
-	scp -P 2222 pkg/prep/expect.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source expect.sh"
-	scp -P 2222 pkg/prep/dejagnu.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source dejagnu.sh"
-	scp -P 2222 pkg/prep/m4.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source m4.sh"
-	scp -P 2222 pkg/prep/ncurses.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source ncurses.sh"
-	scp -P 2222 pkg/prep/bash.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source bash.sh"
-	scp -P 2222 pkg/prep/bison.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source bison.sh"
-	scp -P 2222 pkg/prep/bzip2.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source bzip2.sh"
-	scp -P 2222 pkg/prep/coreutils.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source coreutils.sh"
-	scp -P 2222 pkg/prep/diffutils.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source diffutils.sh"
-	scp -P 2222 pkg/prep/file.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source file.sh"
-	scp -P 2222 pkg/prep/findutils.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source findutils.sh"
-	scp -P 2222 pkg/prep/gawk.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source gawk.sh"
-	scp -P 2222 pkg/prep/gettext.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source gettext.sh"
-	scp -P 2222 pkg/prep/grep.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source grep.sh"
-	scp -P 2222 pkg/prep/make.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source make.sh"
-	scp -P 2222 pkg/prep/patch.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source patch.sh"
-	scp -P 2222 pkg/prep/perl.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source perl.sh"
-	scp -P 2222 pkg/prep/python.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source python.sh"
-	scp -P 2222 pkg/prep/sed.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source sed.sh"
-	scp -P 2222 pkg/prep/tar.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source tar.sh"
-	scp -P 2222 pkg/prep/texinfo.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source texinfo.sh"
-	scp -P 2222 pkg/prep/xz.sh lfs@localhost: && ssh -p 2222 lfs@localhost "source xz.sh"
+	$(SSH_LFS) 'FORCE=$(FORCE) RUN_TESTS=$(RUN_TESTS) bash /mnt/lfs/sources/prep/stage1.sh'
 
 build-pkgs:
-	# TODO: restart ssh daemon for some raisin
-	scp -P 2222 pkg/build/* root@localhost:/mnt/lfs/tools && ssh -p 2222 root@localhost "sh /tools/run-build.sh"
+	$(SSH_ROOT) 'FORCE=$(FORCE) RUN_TESTS=$(RUN_TESTS) bash /mnt/lfs/sources/build/run-build.sh'
 
-	
-all: docker-kill clean docker-build  docker-run run-stage0 ext4-img run-stage1 dl-sources prep-pkgs build-pkgs
+# Inspect / manage resume state.
+status:
+	@$(SSH_ROOT) 'for phase in prep build; do \
+	   d=/mnt/lfs/sources/.done/$$phase; \
+	   echo "== $$phase =="; \
+	   [ -d $$d ] && ls $$d | sort || echo "(nothing built)"; \
+	 done'
+
+reset-stamps:
+	$(SSH_ROOT) 'rm -rf /mnt/lfs/sources/.done'
+
+logs:
+	@$(SSH_ROOT) 'ls -lrt /mnt/lfs/sources/.log/prep /mnt/lfs/sources/.log/build 2>/dev/null || true'
+
+# fstrim the loop-mounted ext4 so the host can reclaim blocks freed by
+# `rm -rf <pkg>-<ver>` after each package build.  Useful between phases
+# on space-constrained hosts.
+trim:
+	$(SSH_ROOT) 'fstrim -v /mnt/lfs'
+
+# ----------------------------------------------------------------- utilities
+ssh:
+	$(SSH_ROOT)
+ssh-lfs:
+	$(SSH_LFS)
+
+lint:
+	shellcheck -S warning script/*.sh pkg/*/*.sh pkgsrc/*.sh run.sh kill_container.sh
+	@command -v hadolint >/dev/null 2>&1 && hadolint Dockerfile \
+	  || docker run --rm -i hadolint/hadolint < Dockerfile
+	bash -n $$(find script pkg pkgsrc -name '*.sh')
+	python3 -m py_compile script/*.py
+
+# ----------------------------------------------------------- pkgsrc layer
+# Phase 1 + 2 + 3 of docs/pkgsrc-plan.md.
+#
+# These run on the LFS system once the base build is complete and the
+# system can reach the network.  They are deliberately separate from the
+# docker-driven base build above so they can be re-run on a real (or
+# qemu-booted) target without rebuilding LFS.
+#
+# Override on the cmdline as needed:
+#   make pkgsrc-bootstrap QUARTER=2025Q4 JOBS=4
+#   make pkgsrc-baseline  LIST=pkg/pkgsrc-baseline.list
+
+QUARTER ?= 2025Q3
+JOBS    ?= $(shell nproc 2>/dev/null || echo 2)
+LIST    ?= pkg/pkgsrc-baseline.list
+
+sources-partition:
+	$(RSYNC) pkgsrc/sources-partition.sh root@localhost:/root/
+	$(SSH_ROOT) 'bash /root/sources-partition.sh'
+
+pkgsrc-bootstrap:
+	$(RSYNC) pkgsrc/bootstrap.sh root@localhost:/root/
+	$(SSH_ROOT) 'QUARTER=$(QUARTER) JOBS=$(JOBS) bash /root/bootstrap.sh'
+
+pkgsrc-baseline:
+	$(RSYNC) pkgsrc/baseline.sh $(LIST) root@localhost:/root/
+	$(SSH_ROOT) 'QUARTER=$(QUARTER) LIST=/root/$(notdir $(LIST)) bash /root/baseline.sh'

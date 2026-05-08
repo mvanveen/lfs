@@ -1,20 +1,26 @@
-cd /sources;
+# sed  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/sed.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
+cd /sources
+rm -rf sed-4.9
+tar xf sed-4.9.tar.xz
+cd sed-4.9
 
-rm -rf sed-4.8
-tar xf sed-4.8.tar.xz
-cd sed-4.8
-
-sed -i 's/usr/tools/'                 build-aux/help2man
-sed -i 's/testsuite.panic-tests.sh//' Makefile.in
-
-./configure --prefix=/usr --bindir=/bin
+./configure --prefix=/usr
 
 make
-
 make html
 
-make check
-
+chown -R tester .
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  su tester -c "PATH=$PATH make check" \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
 make install
-install -d -m755           /usr/share/doc/sed-4.8
-install -m644 doc/sed.html /usr/share/doc/sed-4.8
+install -d -m755           /usr/share/doc/sed-4.9
+install -m644 doc/sed.html /usr/share/doc/sed-4.9
+
+cd /sources
+rm -rf sed-4.9

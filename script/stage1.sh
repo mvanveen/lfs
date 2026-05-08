@@ -1,15 +1,12 @@
-export LFS=/mnt/lfs
-mkdir -v $LFS/tools
-mkdir -v $LFS/sources
-chown -v lfs $LFS/tools
+#!/bin/bash
+# Stage 1 (runs as lfs@localhost): LFS 12.4 chapters 5 and 6 - cross
+# toolchain into $LFS/tools plus the cross-compiled temporary userland
+# into $LFS/usr.  The individual package scripts live in /mnt/lfs/sources/prep/.
+set -e
+# shellcheck source=/dev/null
+. ~/.bashrc
 
-chown -v lfs $LFS/sources
-chmod -v a+wt $LFS/sources
+cd "$LFS/sources"
+md5sum -c md5sums || { echo "checksums failed" >&2; exit 1; }
 
-ln -s $LFS/tools /
-
-rm -f /usr/bin/awk
-ln -s /usr/bin/gawk /usr/bin/awk
-
-rm -f /usr/bin/yacc
-ln -s /usr/bin/bison /usr/bin/yacc
+FORCE="${FORCE:-}" bash /mnt/lfs/sources/prep/run-prep.sh

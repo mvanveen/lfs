@@ -1,0 +1,10 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/autoconf.html
+
+./configure --prefix=/usr
+
+make
+
+make check
+
+make install
+

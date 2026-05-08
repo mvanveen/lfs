@@ -1,25 +1,17 @@
-#TODO: don't hardcode versions
+# gcc-pass2  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter06/gcc-pass2.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /mnt/lfs/sources
-rm -rf gcc-9.2.0
-tar xf gcc-9.2.0.tar.xz
-cd gcc-9.2.0
+rm -rf gcc-15.2.0
+tar xf gcc-15.2.0.tar.xz
+cd gcc-15.2.0
 
-
-cat gcc/limitx.h gcc/glimits.h gcc/limity.h > \
-  `dirname $($LFS_TGT-gcc -print-libgcc-file-name)`/include-fixed/limits.h
-
-for file in gcc/config/{linux,i386/linux{,64}}.h
-do
-  cp -uv $file{,.orig}
-  sed -e 's@/lib\(64\)\?\(32\)\?/ld@/tools&@g' \
-      -e 's@/usr@/tools@g' $file.orig > $file
-  echo '
-#undef STANDARD_STARTFILE_PREFIX_1
-#undef STANDARD_STARTFILE_PREFIX_2
-#define STANDARD_STARTFILE_PREFIX_1 "/tools/lib/"
-#define STANDARD_STARTFILE_PREFIX_2 ""' >> $file
-  touch $file.orig
-done
+tar -xf ../mpfr-4.2.2.tar.xz
+mv -v mpfr-4.2.2 mpfr
+tar -xf ../gmp-6.3.0.tar.xz
+mv -v gmp-6.3.0 gmp
+tar -xf ../mpc-1.3.1.tar.gz
+mv -v mpc-1.3.1 mpc
 
 case $(uname -m) in
   x86_64)
@@ -28,36 +20,36 @@ case $(uname -m) in
   ;;
 esac
 
-tar -xf ../mpfr-4.0.2.tar.xz
-mv -v mpfr-4.0.2 mpfr
-tar -xf ../gmp-6.2.0.tar.xz
-mv -v gmp-6.2.0 gmp
-tar -xf ../mpc-1.1.0.tar.gz
-mv -v mpc-1.1.0 mpc
-
-sed -e '1161 s|^|//|' \
-    -i libsanitizer/sanitizer_common/sanitizer_platform_limits_posix.cc
+sed '/thread_header =/s/@.*@/gthr-posix.h/' \
+    -i libgcc/Makefile.in libstdc++-v3/include/Makefile.in
 
 mkdir -v build
+cd       build
 
-cd build
+../configure                   \
+    --build=$(../config.guess) \
+    --host=$LFS_TGT            \
+    --target=$LFS_TGT          \
+    --prefix=/usr              \
+    --with-build-sysroot=$LFS  \
+    --enable-default-pie       \
+    --enable-default-ssp       \
+    --disable-nls              \
+    --disable-multilib         \
+    --disable-libatomic        \
+    --disable-libgomp          \
+    --disable-libquadmath      \
+    --disable-libsanitizer     \
+    --disable-libssp           \
+    --disable-libvtv           \
+    --enable-languages=c,c++   \
+    LDFLAGS_FOR_TARGET=-L$PWD/$LFS_TGT/libgcc
 
-CC=$LFS_TGT-gcc                                    \
-CXX=$LFS_TGT-g++                                   \
-AR=$LFS_TGT-ar                                     \
-RANLIB=$LFS_TGT-ranlib                             \
-../configure                                       \
-    --prefix=/tools                                \
-    --with-local-prefix=/tools                     \
-    --with-native-system-header-dir=/tools/include \
-    --enable-languages=c,c++                       \
-    --disable-libstdcxx-pch                        \
-    --disable-multilib                             \
-    --disable-bootstrap                            \
-    --disable-libgomp
+make
 
-make -j24
+make DESTDIR=$LFS install
 
-make install
+ln -sfv gcc $LFS/usr/bin/cc
 
-ln -sv gcc /tools/bin/cc
+cd /mnt/lfs/sources
+rm -rf gcc-15.2.0

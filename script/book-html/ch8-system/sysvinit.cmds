@@ -1,0 +1,8 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/sysvinit.html
+
+patch -Np1 -i ../sysvinit-3.14-consolidated-1.patch
+
+make
+
+make install
+

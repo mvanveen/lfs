@@ -1,0 +1,10 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/zstd.html
+
+make prefix=/usr
+
+make check
+
+make prefix=/usr install
+
+rm -v /usr/lib/libzstd.a
+

@@ -1,15 +1,21 @@
+# sysklogd  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/sysklogd.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /sources
+rm -rf sysklogd-2.7.2
+tar xf sysklogd-2.7.2.tar.gz
+cd sysklogd-2.7.2
 
-rm -rf sysklogd-1.5.1
-tar zxf sysklogd-1.5.1.tar.gz
-cd sysklogd-1.5.1
-
-sed -i '/Error loading kernel symbols/{n;n;d}' ksym_mod.c
-sed -i 's/union wait/int/' syslogd.c
+./configure --prefix=/usr      \
+            --sysconfdir=/etc  \
+            --runstatedir=/run \
+            --without-logger   \
+            --disable-static   \
+            --docdir=/usr/share/doc/sysklogd-2.7.2
 
 make
 
-make BINDIR=/sbin install
+make install
 
 cat > /etc/syslog.conf << "EOF"
 # Begin /etc/syslog.conf
@@ -22,5 +28,11 @@ mail.* -/var/log/mail.log
 user.* -/var/log/user.log
 *.emerg *
 
+# Do not open any internet ports.
+secure_mode 2
+
 # End /etc/syslog.conf
 EOF
+
+cd /sources
+rm -rf sysklogd-2.7.2

@@ -1,11 +1,10 @@
-cd /sources;
-
-
-rm -rf ninja-1.10.0
-tar xzf ninja-1.10.0.tar.gz
-cd ninja-1.10.0
-
-export NINJAJOBS=24
+# ninja  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/ninja.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
+cd /sources
+rm -rf ninja-1.13.1
+tar xf ninja-1.13.1.tar.gz
+cd ninja-1.13.1
 
 sed -i '/int Guess/a \
   int   j = 0;\
@@ -14,11 +13,11 @@ sed -i '/int Guess/a \
   if ( j > 0 ) return j;\
 ' src/ninja.cc
 
-python3 configure.py --bootstrap
-
-./ninja ninja_test
-./ninja_test --gtest_filter=-SubprocessTest.SetWithLots
+python3 configure.py --bootstrap --verbose
 
 install -vm755 ninja /usr/bin/
 install -vDm644 misc/bash-completion /usr/share/bash-completion/completions/ninja
 install -vDm644 misc/zsh-completion  /usr/share/zsh/site-functions/_ninja
+
+cd /sources
+rm -rf ninja-1.13.1

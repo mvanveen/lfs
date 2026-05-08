@@ -1,22 +1,26 @@
-cd /sources;
-
-rm -rf readline-8.0
-tar xzf readline-8.0.tar.gz
-cd readline-8.0
+# readline  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/readline.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
+cd /sources
+rm -rf readline-8.3
+tar xf readline-8.3.tar.gz
+cd readline-8.3
 
 sed -i '/MV.*old/d' Makefile.in
 sed -i '/{OLDSUFF}/c:' support/shlib-install
 
+sed -i 's/-Wl,-rpath,[^ ]*//' support/shobj-conf
+
 ./configure --prefix=/usr    \
             --disable-static \
-            --docdir=/usr/share/doc/readline-8.0
+            --with-curses    \
+            --docdir=/usr/share/doc/readline-8.3
 
-make SHLIB_LIBS="-L/tools/lib -lncursesw"
-make SHLIB_LIBS="-L/tools/lib -lncursesw" install
+make SHLIB_LIBS="-lncursesw"
 
-mv -v /usr/lib/lib{readline,history}.so.* /lib
-chmod -v u+w /lib/lib{readline,history}.so.*
-ln -sfv ../../lib/$(readlink /usr/lib/libreadline.so) /usr/lib/libreadline.so
-ln -sfv ../../lib/$(readlink /usr/lib/libhistory.so ) /usr/lib/libhistory.so
+make install
 
-install -v -m644 doc/*.{ps,pdf,html,dvi} /usr/share/doc/readline-8.0
+install -v -m644 doc/*.{ps,pdf,html,dvi} /usr/share/doc/readline-8.3
+
+cd /sources
+rm -rf readline-8.3

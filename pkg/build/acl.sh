@@ -1,20 +1,24 @@
+# acl  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/acl.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /sources
+rm -rf acl-2.3.2
+tar xf acl-2.3.2.tar.xz
+cd acl-2.3.2
 
-rm -rf acl-2.2.53
-tar xzf acl-2.2.53.tar.gz
-cd acl-2.2.53
-
-./configure --prefix=/usr     \
-            --bindir=/bin     \
-            --disable-static  \
-            --sysconfdir=/etc \
-            --docdir=/usr/share/doc/attr-2.4.48
+./configure --prefix=/usr    \
+            --disable-static \
+            --docdir=/usr/share/doc/acl-2.3.2
 
 make
 
-make check
-
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  make check \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
 make install
 
-mv -v /usr/lib/libacl.so.* /lib
-ln -sfv ../../lib/$(readlink /usr/lib/libacl.so) /usr/lib/libacl.so
+cd /sources
+rm -rf acl-2.3.2

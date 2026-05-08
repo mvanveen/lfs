@@ -1,0 +1,12 @@
+# source: https://www.linuxfromscratch.org/lfs/view/stable/chapter08/gdbm.html
+
+./configure --prefix=/usr    \
+            --disable-static \
+            --enable-libgdbm-compat
+
+make
+
+make check
+
+make install
+

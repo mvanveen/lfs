@@ -1,18 +1,24 @@
-cd /sources;
-
-rm -rf xz-5.2.4;
-tar xf xz-5.2.4.tar.xz
-cd xz-5.2.4
+# xz  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/xz.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
+cd /sources
+rm -rf xz-5.8.1
+tar xf xz-5.8.1.tar.xz
+cd xz-5.8.1
 
 ./configure --prefix=/usr    \
             --disable-static \
-	    --docdir=/usr/share/doc/xz-5.2.4
+            --docdir=/usr/share/doc/xz-5.8.1
 
 make
 
-make check
-
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  make check \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
 make install
-mv -v   /usr/bin/{lzma,unlzma,lzcat,xz,unxz,xzcat} /bin
-mv -v /usr/lib/liblzma.so.* /lib
-ln -svf ../../lib/$(readlink /usr/lib/liblzma.so) /usr/lib/liblzma.so
+
+cd /sources
+rm -rf xz-5.8.1

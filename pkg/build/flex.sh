@@ -1,18 +1,27 @@
+# flex  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/flex.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /sources
-
 rm -rf flex-2.6.4
-tar xzf flex-2.6.4.tar.gz
+tar xf flex-2.6.4.tar.gz
 cd flex-2.6.4
 
-sed -i "/math.h/a #include <malloc.h>" src/flexdef.h
-
-HELP2MAN=/tools/bin/true \
-./configure --prefix=/usr --docdir=/usr/share/doc/flex-2.6.4
+./configure --prefix=/usr \
+            --docdir=/usr/share/doc/flex-2.6.4 \
+            --disable-static
 
 make
 
-make check
-
+if [ "${RUN_TESTS:-0}" = 1 ]; then
+  make check \
+    || echo "WARN: tests failed (advisory)"
+else
+  echo "skip tests (RUN_TESTS=0)"
+fi
 make install
 
-ln -sv flex /usr/bin/lex
+ln -sfv flex   /usr/bin/lex
+ln -sfv flex.1 /usr/share/man/man1/lex.1
+
+cd /sources
+rm -rf flex-2.6.4

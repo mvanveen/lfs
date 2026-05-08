@@ -1,10 +1,12 @@
+# iana-etc  --  https://www.linuxfromscratch.org/lfs/view/stable/chapter08/iana-etc.html
+# shellcheck disable=SC2046,SC2086,SC2038,SC2155,SC2217,SC2226,SC2061
+set -e
 cd /sources
+rm -rf iana-etc-20250807
+tar xf iana-etc-20250807.tar.gz
+cd iana-etc-20250807
 
-rm -rf iana-etc-2.30
-tar xf iana-etc-2.30.tar.bz2
-cd iana-etc-2.30
+cp services protocols /etc
 
-make
-
-make install
-
+cd /sources
+rm -rf iana-etc-20250807
