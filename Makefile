@@ -134,15 +134,30 @@ lint:
 QUARTER ?= 2025Q3
 JOBS    ?= $(shell nproc 2>/dev/null || echo 2)
 LIST    ?= pkg/pkgsrc-baseline.list
+LFS_MNT ?= /mnt/lfs
+
+# All three targets push their script into the LFS rootfs at $(LFS_MNT)/root
+# and then `chroot` into it (with /proc, /sys, /dev, /run bind-mounts and
+# a working /etc/resolv.conf already plumbed by the base build) so the
+# pkgsrc layer is installed *into the LFS system*, not into the build
+# container.
 
 sources-partition:
-	$(RSYNC) pkgsrc/sources-partition.sh root@localhost:/root/
-	$(SSH_ROOT) 'bash /root/sources-partition.sh'
+	$(RSYNC) pkgsrc/sources-partition.sh root@localhost:$(LFS_MNT)/root/
+	$(SSH_ROOT) 'chroot $(LFS_MNT) /usr/bin/env -i HOME=/root TERM=$$TERM \
+	      PATH=/usr/bin:/usr/sbin:/bin:/sbin \
+	      bash /root/sources-partition.sh'
 
 pkgsrc-bootstrap:
-	$(RSYNC) pkgsrc/bootstrap.sh root@localhost:/root/
-	$(SSH_ROOT) 'QUARTER=$(QUARTER) JOBS=$(JOBS) bash /root/bootstrap.sh'
+	$(RSYNC) pkgsrc/bootstrap.sh root@localhost:$(LFS_MNT)/root/
+	$(SSH_ROOT) 'chroot $(LFS_MNT) /usr/bin/env -i HOME=/root TERM=$$TERM \
+	      PATH=/usr/bin:/usr/sbin:/bin:/sbin \
+	      QUARTER=$(QUARTER) JOBS=$(JOBS) \
+	      bash /root/bootstrap.sh'
 
 pkgsrc-baseline:
-	$(RSYNC) pkgsrc/baseline.sh $(LIST) root@localhost:/root/
-	$(SSH_ROOT) 'QUARTER=$(QUARTER) LIST=/root/$(notdir $(LIST)) bash /root/baseline.sh'
+	$(RSYNC) pkgsrc/baseline.sh $(LIST) root@localhost:$(LFS_MNT)/root/
+	$(SSH_ROOT) 'chroot $(LFS_MNT) /usr/bin/env -i HOME=/root TERM=$$TERM \
+	      PATH=/usr/bin:/usr/sbin:/bin:/sbin \
+	      QUARTER=$(QUARTER) LIST=/root/$(notdir $(LIST)) \
+	      bash /root/baseline.sh'
