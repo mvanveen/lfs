@@ -86,6 +86,17 @@ PKGSRC_RUN_TEST=         no
 PKG_OPTIONS.libfetch=    inet6
 PREFER_NATIVE+=          openssl
 BUILDLINK_DEPMETHOD.openssl=  build
+
+# ---- per-package MAKE_JOBS overrides -----------------------------------
+# GNU bash 5.3's builtins/Makefile.in has a parallel-make race where one
+# rule does 'rm -f hash.c' (and other generated .c files) before mkbuiltins
+# regenerates them, while another rule reads them. With -j>=2 you hit:
+#   cc1: fatal error: hash.c: No such file or directory
+# Force single-job for shells/bash until upstream fixes it. Tracking:
+# Fossil ticket 9dc35fb08c (https://waltz-tare.exe.xyz/tktview/9dc35fb08c).
+.if !empty(PKGPATH:Mshells/bash)
+MAKE_JOBS_SAFE=          no
+.endif
 EOF
 fi
 
