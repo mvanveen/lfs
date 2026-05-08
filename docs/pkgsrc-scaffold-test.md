@@ -78,6 +78,28 @@ ssh -p 2222 root@localhost 'cp /root/bootstrap.sh /mnt/lfs/root/ && \
 ssh -p 2222 root@localhost 'chroot /mnt/lfs bash /root/baseline.sh'
 ```
 
+## Re-test (rerun, branch already in place)
+
+A later session re-validated the persisted scaffold without rebuilding:
+
+| Step | Result |
+| ---- | ------ |
+| `bash sources-partition.sh` (idempotent rerun) | Exit 0; tree intact (5 dirs + README + MANIFEST). |
+| `pkg_info \| wc -l` | 27 baseline pkgs still installed. |
+| `bash -lc 'curl -sI https://github.com'` | HTTP/2 200 (TLS via pkgsrc curl). |
+| `bmake install` of `devel/jq` from source | 33 pkgs after install; `/opt/pkg/bin/jq --version` -> `jq-1.8.1`; binary package cached at `/srv/sources/pkgsrc-packages/2025Q3/All/jq-1.8.1.tgz`. |
+
+Notes:
+- Default `MAKE_JOBS=2` in `mk.conf` triggers a parallel-build race in
+  `shells/bash` (it does `rm -f hash.c` and the recipe to regenerate it
+  runs concurrently with the recipe that consumes it). `MAKE_JOBS=1`
+  works. Worth bumping `MAKE_JOBS` per-package or filing upstream.
+- `sysutils/tree` (1.8.0) FTBFS on glibc 2.42 (`qsort` callback signature
+  rejected by gcc 15.2 strictness). Upstream patch needed; not a
+  scaffolding bug.
+- pkgsrc tree still resides on the same fs as `/`; Phase 1's separate
+  partition still pending.
+
 ## Open scaffold gaps
 
 - The `make sources-partition`, `make pkgsrc-bootstrap`, `make pkgsrc-baseline`
