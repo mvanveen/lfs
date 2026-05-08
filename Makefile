@@ -142,8 +142,18 @@ LFS_MNT ?= /mnt/lfs
 # pkgsrc layer is installed *into the LFS system*, not into the build
 # container.
 
+# Materialize /srv/sources as its own loop-backed ext4 filesystem (8G,
+# fstab-mounted) and seed it with all the LFS / pkgsrc / blfs source
+# tarballs.  Idempotent.
+SOURCES_IMG  ?= /srv/sources.img
+SOURCES_SIZE ?= 8G
+
 sources-partition:
-	$(RSYNC) pkgsrc/sources-partition.sh root@localhost:$(LFS_MNT)/root/
+	$(RSYNC) pkgsrc/mksources-img.sh pkgsrc/sources-partition.sh root@localhost:$(LFS_MNT)/root/
+	$(SSH_ROOT) 'chroot $(LFS_MNT) /usr/bin/env -i HOME=/root TERM=$$TERM \
+	      PATH=/usr/bin:/usr/sbin:/bin:/sbin \
+	      IMG=$(SOURCES_IMG) SIZE=$(SOURCES_SIZE) \
+	      bash /root/mksources-img.sh'
 	$(SSH_ROOT) 'chroot $(LFS_MNT) /usr/bin/env -i HOME=/root TERM=$$TERM \
 	      PATH=/usr/bin:/usr/sbin:/bin:/sbin \
 	      bash /root/sources-partition.sh'
