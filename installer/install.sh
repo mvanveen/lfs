@@ -1,6 +1,6 @@
 #!/bin/bash
 # ==============================================================================
-#  LFS 12.4 Installer
+#  mvv linux 12.4 Installer
 #  ------------------
 #  Designed to run from the live ISO's initramfs.  Pretty TUI in pure bash,
 #  no external dialog/whiptail dependency.
@@ -88,17 +88,19 @@ banner() {
 
     fg "${COL_W[@]}"; bold
     printf '  '
-    center "$w" '╦  ╔═╗╔═╗   ╦╔═╗   ╦  ╦╔╗╔╔═╗╦ ╦═╗ ╦   ╔═╗╦═╗╔═╗╔╦╗   ╔═╗╔═╗╦═╗╔═╗╔╦╗╔═╗╦ ╦'
+    center "$w" '                    ___               '
     printf '\n  '
-    center "$w" '║  ╠╣ ╚═╗   ║╚═╗   ║  ║║║║║ ║╔╩╦╝   ╠╣ ╠╦╝║ ║║║║   ╚═╗║  ╠╦╝╠═╣ ║ ║  ╠═╣'
+    center "$w" '  __ _ _  ___  __  / (_)__  __ ____ __ '
     printf '\n  '
-    center "$w" '╩═╝╚  ╚═╝   ╩╚═╝   ╩═╝╩╝╚╝╚═╝╩ ╚═   ╚  ╩╚═╚═╝╩ ╩   ╚═╝╚═╝╩╚═╩ ╩ ╩ ╚═╝╩ ╩'
+    center "$w" ' /  '\'' \ |/ / |/ / / / / _ \/ // /\ \ /'
+    printf '\n  '
+    center "$w" '/_/_/_/___/|___/ /_/_/_//_/\_,_//_\_\ '
     rst
     printf '\n  '
     gradient_line "$w"
     printf '\n\n'
     fg "${COL_M[@]}"
-    center "$cols" "version 12.4 │ kernel ${KVER} │ glibc 2.42 │ gcc 15.2"
+    center "$cols" "mvv linux 12.4 │ kernel ${KVER} │ glibc 2.42 │ gcc 15.2"
     rst
     printf '\n\n'
 }
@@ -243,7 +245,7 @@ step_welcome() {
         boxline "$p" "$w" ""
         boxline "$p" "$w" "$(fg "${COL_W[@]}"; printf 'Welcome.'; rst)"
         boxline "$p" "$w" ""
-        boxline "$p" "$w" "This installer will lay LFS 12.4 onto a disk of your choice."
+        boxline "$p" "$w" "This installer will lay mvv linux 12.4 onto a disk of your choice."
         boxline "$p" "$w" ""
         boxline "$p" "$w" "$(fg "${COL_E[@]}"; printf '⚠ '; rst)Everything on the chosen disk will be erased."
         boxline "$p" "$w" ""
@@ -413,7 +415,7 @@ step_grub() {
     maybe "chroot $TARGET sh -c 'cat > /boot/grub/grub.cfg <<EOF
 set default=0
 set timeout=5
-menuentry \"LFS 12.4\" {
+menuentry \"mvv linux 12.4\" {
     linux /vmlinuz-${KVER} root=/dev/${TARGET_DISK}3 ro
 }
 EOF'"
