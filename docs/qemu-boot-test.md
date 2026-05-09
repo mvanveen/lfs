@@ -70,3 +70,28 @@ transcript. `qemu-init3-boot.log` is a separate run with the default
 - KVM is available on this VM (`/dev/kvm` exists; user added to `kvm` group).
 - The serial console works fine; useful for scripted regression tests once
   the bootscripts gap is closed.
+
+## Update: hybrid ISO via grub-mkrescue (2026-05-08)
+
+Fossil ticket `ea4402591f` is now partially resolved. The build harness
+produces a BIOS-bootable hybrid ISO via `make lfs-iso`:
+
+```
+make build-xorriso        # one-shot; builds xorriso into /usr/local
+make lfs-iso              # produces /mnt/lfs/boot/lfs.iso
+```
+
+Then on the host:
+
+```sh
+sudo debugfs -R 'dump /boot/lfs.iso /tmp/lfs.iso' \
+    /var/lib/docker/.../lfs.img?offset=$((2048*512))
+qemu-system-x86_64 -enable-kvm -cpu host -smp 2 -m 1024 \
+    -cdrom /tmp/lfs.iso -boot d -nographic -no-reboot
+```
+
+Verified: GRUB loads, kernel 6.16.1 runs, drivers come up. The current
+ISO contains kernel + grub.cfg only (no rootfs), so it kernel-panics at
+"VFS: Unable to mount root fs" -- exactly as expected. Follow-up work:
+bundle a small initramfs / live rootfs into the ISO so it's a complete
+live system.

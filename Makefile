@@ -171,3 +171,26 @@ pkgsrc-baseline:
 	      PATH=/usr/bin:/usr/sbin:/bin:/sbin \
 	      QUARTER=$(QUARTER) LIST=/root/$(notdir $(LIST)) \
 	      bash /root/baseline.sh'
+
+# ----------------------------------------------------------- bootable ISO
+# Resolves Fossil ticket ea4402591f.  Builds xorriso (not in LFS base) into
+# /usr/local then runs grub-mkrescue against a small ISO root with the
+# LFS kernel + grub.cfg.  Output: $(LFS_MNT)/boot/lfs.iso, which is a
+# BIOS-bootable / UEFI-capable hybrid CD image.
+
+ISO ?= /boot/lfs.iso
+
+build-xorriso:
+	$(RSYNC) script/build-xorriso.sh root@localhost:$(LFS_MNT)/root/
+	$(SSH_ROOT) 'chroot $(LFS_MNT) /usr/bin/env -i HOME=/root TERM=$$TERM \
+	      PATH=/usr/bin:/usr/sbin:/bin:/sbin \
+	      bash /root/build-xorriso.sh'
+
+lfs-iso: build-xorriso
+	$(RSYNC) script/mkiso.sh root@localhost:$(LFS_MNT)/root/
+	$(SSH_ROOT) 'chroot $(LFS_MNT) /usr/bin/env -i HOME=/root TERM=$$TERM \
+	      PATH=/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/sbin:/bin:/sbin \
+	      OUT=$(ISO) bash /root/mkiso.sh'
+	@echo "ISO available at $(LFS_MNT)$(ISO)"
+	@echo "To boot it on this host:"
+	@echo "  qemu-system-x86_64 -enable-kvm -cpu host -smp 2 -m 1024 -cdrom <iso-path> -boot d -nographic"
